@@ -1,0 +1,27 @@
+{
+  "groups": [
+    {
+      "name": "spring.redis",
+      "type": "org.wxl.alumniMatching.config.RedissonConfig",
+      "sourceType": "org.wxl.alumniMatching.config.RedissonConfig"
+    }
+  ],
+  "properties": [
+    {
+      "name": "spring.redis.host",
+      "type": "java.lang.String",
+      "sourceType": "org.wxl.alumniMatching.config.RedissonConfig"
+    },
+    {
+      "name": "spring.redis.port",
+      "type": "java.lang.String",
+      "sourceType": "org.wxl.alumniMatching.config.RedissonConfig"
+    },
+    {
+      "name": "spring.redis.redisson-database",
+      "type": "java.lang.Integer",
+      "sourceType": "org.wxl.alumniMatching.config.RedissonConfig"
+    }
+  ],
+  "hints": []
+}

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.wxl.alumniMatching.mapper.UserMapper">
+
+    <update id="updateByUserUpdateDTO" parameterType="org.wxl.alumniMatching.domain.dto.UserUpdateDTO">
+        update tb_user
+        <set>
+            <if test="username != null and username != ''">
+                username = #{username},
+            </if>
+            <if test="avatarUrl != null and avatarUrl != ''">
+                avatar_url = #{avatarUrl},
+            </if>
+            <if test="gender != null">
+                gender = #{gender},
+            </if>
+            <if test="userPassword != null and userPassword != ''">
+                user_password = #{userPassword},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            <if test="school != null and school != ''">
+                school = #{school},
+            </if>
+            <if test="profile != null and profile != ''">
+                profile = #{profile},
+            </if>
+            <if test="userStatus != null ">
+                user_status = #{userStatus},
+            </if>
+            <if test="userRole != null ">
+                user_role = #{userRole},
+            </if>
+            <if test="tags != null and tags != ''">
+                tags = #{tags},
+            </if>
+        </set>
+            <where>
+                <if test="id != null">
+                    id = #{id}
+                </if>
+            </where>
+    </update>
+</mapper>
