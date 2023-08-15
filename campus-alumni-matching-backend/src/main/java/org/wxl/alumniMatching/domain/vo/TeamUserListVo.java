@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.wxl.alumniMatching.domain.entity.User;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -45,5 +46,5 @@ public class TeamUserListVo implements Serializable {
     private LocalDateTime createTime;
 
     @ApiModelProperty(value = "加入队伍的成员")
-    List<UserListVO> userList;
+    List<UserTagVO> userList;
 }

@@ -34,9 +34,6 @@ public class TeamListDTO  implements Serializable {
     @ApiModelProperty(value = "最大人数")
     private Integer maxNum;
 
-    @ApiModelProperty(value = "过期时间")
-    private LocalDateTime expireTime;
-
     @ApiModelProperty(value = "队长id")
     private Long leaderId;
 

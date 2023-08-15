@@ -17,4 +17,12 @@
         <result column="is_delete" property="isDelete" />
     </resultMap>
 
+    <select id="getUserList" resultType="org.wxl.alumniMatching.domain.vo.UserTagVO">
+        select u.id,u.username,u.user_account,u.avatar_url,u.profile,u.gender
+                    from tb_team t
+                     left join tb_user_team ut on t.id = ut.team_id
+                     left join tb_user u on ut.user_id = u.id
+                where t.id = #{teamUserListId};
+    </select>
+
 </mapper>

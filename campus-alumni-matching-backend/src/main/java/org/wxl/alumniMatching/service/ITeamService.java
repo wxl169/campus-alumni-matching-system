@@ -1,10 +1,13 @@
 package org.wxl.alumniMatching.service;
 
 import org.wxl.alumniMatching.domain.dto.TeamAddDTO;
+import org.wxl.alumniMatching.domain.dto.TeamJoinDTO;
+import org.wxl.alumniMatching.domain.dto.TeamListDTO;
 import org.wxl.alumniMatching.domain.dto.TeamUpdateDTO;
 import org.wxl.alumniMatching.domain.entity.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.wxl.alumniMatching.domain.entity.User;
+import org.wxl.alumniMatching.domain.vo.PageVO;
 
 /**
  * <p>
@@ -40,4 +43,23 @@ public interface ITeamService extends IService<Team> {
      * @return 判断是否删除成功
      */
     boolean deleteTeam(long teamId, User loginUser);
+
+    /**
+     * 查询队伍列表
+     *
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @param teamListDTO 查询条件
+     * @param loginUser 当前登录用户
+     * @return 获取的分页队伍数据
+     */
+    PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser);
+
+    /**
+     * 加入队伍
+     * @param teamListDTO 加入队伍的主键和密码
+     * @param loginUser 当前登录用户
+     * @return 判断是否加入成功
+     */
+    boolean joinTeam(TeamJoinDTO teamListDTO, User loginUser);
 }

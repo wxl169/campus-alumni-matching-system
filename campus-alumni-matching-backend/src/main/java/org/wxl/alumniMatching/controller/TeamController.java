@@ -7,13 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.common.ResultUtils;
-import org.wxl.alumniMatching.domain.dto.DeleteDTO;
-import org.wxl.alumniMatching.domain.dto.TeamAddDTO;
-import org.wxl.alumniMatching.domain.dto.TeamListDTO;
-import org.wxl.alumniMatching.domain.dto.TeamUpdateDTO;
+import org.wxl.alumniMatching.domain.dto.*;
 import org.wxl.alumniMatching.domain.entity.Team;
 import org.wxl.alumniMatching.domain.entity.User;
-import org.wxl.alumniMatching.domain.entity.UserTeam;
 import org.wxl.alumniMatching.domain.vo.PageVO;
 import org.wxl.alumniMatching.domain.vo.TeamByIdVO;
 import org.wxl.alumniMatching.exception.BusinessException;
@@ -23,11 +19,6 @@ import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 /**
@@ -75,10 +66,10 @@ public class TeamController {
         }
         User loginUser = userService.getLoginUser(request);
         boolean result = teamService.updateTeam(teamUpdateDTO, loginUser);
-        if (!result) {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新失败");
-        }
-        return ResultUtils.success(true);
+//        if (!result) {
+//            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新失败");
+//        }
+        return ResultUtils.success(result);
     }
 
     /**
@@ -143,12 +134,29 @@ public class TeamController {
     @ApiOperation(value = "查询队伍列表")
     @GetMapping("/list")
     public BaseResponse<PageVO> teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO,HttpServletRequest request){
-        if (teamListDTO == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        boolean isAdmin = userService.isAdmin(request);
-
-        return null;
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(teamService.teamList(pageNum,pageSize,teamListDTO,loginUser));
     }
+
+    /**
+     * 用户加入队伍
+     *
+     * @param teamListDTO 队伍的主键和密码
+     * @return 判断是否加入成功
+     */
+    @ApiOperation(value = "用户加入队伍")
+    @PostMapping("/join")
+    public BaseResponse<Boolean> joinTeam(@RequestBody TeamJoinDTO teamListDTO, HttpServletRequest request) {
+        if (teamListDTO == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.joinTeam(teamListDTO, loginUser);
+//        if (!result){
+//            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"加入队伍失败");
+//        }
+        return ResultUtils.success(result);
+    }
+
 
 }

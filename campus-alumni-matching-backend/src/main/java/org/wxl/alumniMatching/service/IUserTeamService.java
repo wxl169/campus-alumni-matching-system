@@ -11,5 +11,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IUserTeamService extends IService<UserTeam> {
 
-
+    /**
+     * 获取某队伍当前人数
+     *
+     * @param teamId 队伍主键
+     * @return
+     */
+    long countTeamUserByTeamId(long teamId);
 }

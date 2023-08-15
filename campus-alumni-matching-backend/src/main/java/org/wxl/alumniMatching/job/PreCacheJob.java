@@ -37,10 +37,15 @@ public class PreCacheJob {
     @Resource
     private RedissonClient redissonClient;
 
-    // 重点用户
+    /**
+     * 重点用户
+     */
     private  List<Long> mainUserList = Collections.singletonList(1L);
 
-    // 每天执行，预热推荐用户
+
+    /**
+     * 每天执行，预热推荐用户
+     */
     @Scheduled(cron = "0 30 * * * ? ")
     public void doCacheRecommendUser() {
         RLock lock = redissonClient.getLock("alumniMatching:precachejob:docache:lock");
