@@ -2,8 +2,7 @@ import { createApp } from 'vue'
 import './style.css'
 import App from './App.vue'
 import { Button,Toast,Icon,NavBar,Tabbar, TabbarItem , Search,Divider,Tag ,TreeSelect,Col, Row,Cell, CellGroup,Form, Field,ConfigProvider,Card} from 'vant';
-import { Empty} from 'vant';
-
+import {Empty,DatePicker } from 'vant';
 import 'vant/es/toast/style';
 import * as VueRouter from "vue-router";
 import routes from "./config/route"
@@ -28,7 +27,7 @@ app.use(Field);
 app.use(ConfigProvider);
 app.use(Card);
 app.use(Empty);
-
+app.use(DatePicker);
 
 
 const router = VueRouter.createRouter({

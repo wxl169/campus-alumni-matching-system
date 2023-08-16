@@ -6,6 +6,7 @@ import UserEditPage from "../pages/UserEditPage.vue";
 import SearchResultPage from "../pages/SearchResultPage.vue";
 import UserHomePage from "../pages/UserHomePage.vue";
 import UserLoginPage from "../pages/UserLoginPage.vue";
+import TeamAddPage from "../pages/TeamAddPage.vue";
 
 // 2. 定义一些路由
 const routes = [
@@ -17,6 +18,7 @@ const routes = [
     { path: '/user/list', component: SearchResultPage },
     { path: '/user/home', component: UserHomePage},
     { path: '/user/login', component: UserLoginPage},
+    { path: '/team/add', component: TeamAddPage},
   ]
 
 export default routes;
