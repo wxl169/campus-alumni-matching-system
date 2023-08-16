@@ -57,9 +57,19 @@ public interface ITeamService extends IService<Team> {
 
     /**
      * 加入队伍
+     *
      * @param teamListDTO 加入队伍的主键和密码
      * @param loginUser 当前登录用户
      * @return 判断是否加入成功
      */
     boolean joinTeam(TeamJoinDTO teamListDTO, User loginUser);
+
+    /**
+     * 退出队伍
+     *
+     * @param teamId 队伍主键
+     * @param loginUser 当前登录用户
+     * @return 判断是否退出成功
+     */
+    boolean quitTeam(Long teamId, User loginUser);
 }

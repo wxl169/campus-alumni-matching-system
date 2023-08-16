@@ -1,6 +1,7 @@
 package org.wxl.alumniMatching.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -342,6 +343,68 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
                 lock.unlock();
             }
         }
+    }
+
+    /**
+     * 退出队伍
+     *
+     * @param teamId 队伍主键
+     * @param loginUser 当前登录用户
+     * @return 判断是否退出成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean quitTeam(Long teamId, User loginUser) {
+        if (teamId == null || teamId < 1) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        Team team = getTeamById(teamId);
+        long userId = loginUser.getId();
+
+        UserTeam queryUserTeam = new UserTeam();
+        queryUserTeam.setTeamId(teamId);
+        queryUserTeam.setUserId(userId);
+
+        LambdaQueryWrapper<UserTeam> queryWrapper = new LambdaQueryWrapper<>(queryUserTeam);
+        //判断当前用户是否加入该队伍
+        long count = userTeamService.count(queryWrapper);
+        if (count == 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "未加入队伍");
+        }
+        long teamHasJoinNum = userTeamService.countTeamUserByTeamId(teamId);
+        // 队伍只剩一人，解散
+        if (teamHasJoinNum == 1) {
+            // 删除队伍
+            this.removeById(teamId);
+        } else {
+            // 队伍还剩至少两人
+            // 是队长
+            if (team.getLeaderId() == userId) {
+                // 把队伍转移给最早加入的用户
+                // 1. 查询已加入队伍的所有用户和加入时间
+                LambdaQueryWrapper<UserTeam> userTeamQueryWrapper = new LambdaQueryWrapper<>();
+                userTeamQueryWrapper.eq(UserTeam::getTeamId, teamId);
+                //查找最早入队的两人
+                userTeamQueryWrapper.last("order by id asc limit 2");
+
+                List<UserTeam> userTeamList = userTeamService.list(userTeamQueryWrapper);
+                if (CollectionUtils.isEmpty(userTeamList) || userTeamList.size() <= 1) {
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR,"系统内部异常");
+                }
+                UserTeam nextUserTeam = userTeamList.get(1);
+                Long nextTeamLeaderId = nextUserTeam.getUserId();
+                // 更新当前队伍的队长
+                Team updateTeam = new Team();
+                updateTeam.setId(teamId);
+                updateTeam.setLeaderId(nextTeamLeaderId);
+                boolean result = this.updateById(updateTeam);
+                if (!result) {
+                    throw new BusinessException(ErrorCode.SYSTEM_ERROR, "更新队伍队长失败");
+                }
+            }
+        }
+        // 移除关系
+        return userTeamService.remove(queryWrapper);
     }
 
 

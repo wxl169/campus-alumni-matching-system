@@ -12,6 +12,6 @@ import java.io.Serializable;
 @Data
 public class DeleteDTO implements Serializable {
     private static final long serialVersionUID = -2286615406073833302L;
-    private long id;
+    private Long id;
 
 }

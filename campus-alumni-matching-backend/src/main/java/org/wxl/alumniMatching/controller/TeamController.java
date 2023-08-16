@@ -98,7 +98,7 @@ public class TeamController {
      * @param deleteDTO 队伍id
      * @return 判断是否删除成功
      */
-    @ApiOperation(value = "删除队伍信息")
+    @ApiOperation(value = "删除队伍信息||解散队伍")
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteTeam(@RequestBody DeleteDTO deleteDTO, HttpServletRequest request) {
         if (deleteDTO == null || deleteDTO.getId() < 1) {
@@ -152,11 +152,27 @@ public class TeamController {
         }
         User loginUser = userService.getLoginUser(request);
         boolean result = teamService.joinTeam(teamListDTO, loginUser);
-//        if (!result){
-//            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"加入队伍失败");
-//        }
         return ResultUtils.success(result);
     }
+
+
+    /**
+     * 用户退出队伍
+     * @param teamId 队伍主键
+     * @param request 获取当前登录用户
+     * @return 判断是否退出成功
+     */
+    @ApiOperation(value = "用户退出队伍")
+    @PostMapping("/quit")
+    public BaseResponse<Boolean> quitTeam(Long teamId, HttpServletRequest request) {
+        if (teamId == null || teamId < 1) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean result = teamService.quitTeam(teamId, loginUser);
+        return ResultUtils.success(result);
+    }
+
 
 
 }
