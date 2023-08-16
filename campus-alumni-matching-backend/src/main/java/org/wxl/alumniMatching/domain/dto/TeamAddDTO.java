@@ -1,6 +1,7 @@
 package org.wxl.alumniMatching.domain.dto;
 
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -29,6 +30,7 @@ public class TeamAddDTO {
     private Integer maxNum;
 
     @ApiModelProperty(value = "过期时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expireTime;
 
     @ApiModelProperty(value = "0-公开，1-私有，2-加密")

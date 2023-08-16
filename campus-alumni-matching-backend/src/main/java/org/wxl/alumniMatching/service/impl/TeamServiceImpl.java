@@ -451,7 +451,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             if (LocalDateTime.now().isAfter(expireTime)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "超时时间 > 当前时间");
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "需超时时间 > 当前时间");
             }
         }
 
