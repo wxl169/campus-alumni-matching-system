@@ -9,8 +9,8 @@ public interface UploadService {
     /**
      * 上传文件
      *
-     * @param img 文件名
+     * @param avatarUrl 文件名
      * @return 返回图片路径
      */
-    String uploadImg(MultipartFile img);
+    String uploadImg(MultipartFile avatarUrl);
 }

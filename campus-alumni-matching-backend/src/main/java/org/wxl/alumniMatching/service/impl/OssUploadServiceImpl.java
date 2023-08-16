@@ -29,10 +29,13 @@ public class OssUploadServiceImpl implements UploadService {
 
 
     @Override
-    public String uploadImg(MultipartFile img) {
+    public String uploadImg(MultipartFile avatarUrl) {
+        if (avatarUrl == null){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请上传图片");
+        }
         //判断文件类型或者文件大小
         //获取原始文件名
-        String originalFilename = img.getOriginalFilename();
+        String originalFilename = avatarUrl.getOriginalFilename();
         //对原始文件名进行判断
         assert originalFilename != null;
         if(!originalFilename.endsWith(".png") && !originalFilename.endsWith(".jpg")) {
@@ -40,17 +43,19 @@ public class OssUploadServiceImpl implements UploadService {
         }
         //如果判断通过上传文件到OSS
         String filePath = PathUtils.generateFilePath(originalFilename);
-        return uploadOss(img,filePath);
+        return uploadOss(avatarUrl,filePath);
     }
 
 
-    private String accessKey;
-    private String secretKey;
-    private String bucket;
+    private  String accessKey;
+    private  String secretKey;
+    private  String bucket;
+    private  String cdnTest;
+
 
     private String uploadOss(MultipartFile imgFile,String filePath){
         //构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(	Region.region0());
+        Configuration cfg = new Configuration(	Region.autoRegion());
         // 指定分片上传版本
         cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         //...其他参数参考类注释
@@ -62,14 +67,13 @@ public class OssUploadServiceImpl implements UploadService {
             InputStream inputStream = imgFile.getInputStream();
             Auth auth = Auth.create(accessKey, secretKey);
             String upToken = auth.uploadToken(bucket);
-
             try {
                 Response response = uploadManager.put(inputStream,key,upToken,null, null);
                 //解析上传成功的结果
                 DefaultPutRet putRet = new Gson().fromJson(response.bodyString(), DefaultPutRet.class);
                 System.out.println(putRet.key);
                 System.out.println(putRet.hash);
-                return "http://rvfarv3uu.bkt.clouddn.com/" + key;
+                return cdnTest + key;
             } catch (QiniuException ex) {
                 Response r = ex.response;
                 System.err.println(r.toString());
