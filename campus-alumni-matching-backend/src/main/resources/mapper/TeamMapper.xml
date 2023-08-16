@@ -6,6 +6,7 @@
     <resultMap id="BaseResultMap" type="org.wxl.alumniMatching.domain.entity.Team">
         <id column="id" property="id" />
         <result column="team_name" property="teamName" />
+        <result column="avatar_url" property="avatarUrl" />
         <result column="description" property="description" />
         <result column="max_num" property="maxNum" />
         <result column="expire_time" property="expireTime" />

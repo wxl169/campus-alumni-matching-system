@@ -80,12 +80,21 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         //判断队伍信息是否符合要求
         judgmentTeamInformation(team);
 
+        //如果没有传头像则将队长的头像当作群头像
+        if(StringUtils.isBlank(team.getAvatarUrl())){
+            User user = userService.getById(loginUser.getId());
+            if (StringUtils.isBlank(user.getAvatarUrl())){
+                team.setAvatarUrl("avatar.jpg");
+            }else{
+                team.setAvatarUrl(user.getAvatarUrl());
+            }
+        }
 
         //队伍状态
         TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(teamAddDTO.getStatus());
         //如果队伍是公开或者私密的就取消密码
         if (TeamStatusEnum.PUBLIC.equals(statusEnum)){
-            teamAddDTO.setPassword("");
+            team.setPassword("");
         }
 
         //将每位用户允许参加的队伍个数控制在 1 ~ 5
@@ -148,7 +157,15 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
 
         //判断队伍信息是否按条件填入
         judgmentTeamInformation(updateTeam);
-
+        //如果没有传头像则将队长的头像当作群头像
+        if(StringUtils.isBlank(updateTeam.getAvatarUrl())){
+            User user = userService.getById(oldTeam.getLeaderId());
+            if (StringUtils.isBlank(user.getAvatarUrl())){
+                updateTeam.setAvatarUrl("avatar.jpg");
+            }else{
+                updateTeam.setAvatarUrl(user.getAvatarUrl());
+            }
+        }
         //队伍状态
         TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(teamUpdateDTO.getStatus());
         //如果队伍是公开或者私密的就取消密码

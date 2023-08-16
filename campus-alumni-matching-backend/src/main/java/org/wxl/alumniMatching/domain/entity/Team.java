@@ -31,6 +31,9 @@ public class Team implements Serializable {
     @ApiModelProperty(value = "队伍名称")
     private String teamName;
 
+    @ApiModelProperty(value = "群头像")
+    private String avatarUrl;
+
     @ApiModelProperty(value = "队伍描述")
     private String description;
 
