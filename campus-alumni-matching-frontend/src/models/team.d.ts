@@ -3,6 +3,7 @@ import { UserType } from "./user";
 //队伍类型
 export type TeamType = {
     id : number;
+    avatarUrl: string;
     leaderId : number;
     teamName : string;
     description? : string;
@@ -12,5 +13,5 @@ export type TeamType = {
     expireTime: Date;
     createTime : Date;
     updateTime : Date;
-    userList : [UserType];
+    userList : UserType[];
 }

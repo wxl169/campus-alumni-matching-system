@@ -4,7 +4,11 @@
             <van-cell-group inset>
                 <van-field v-model="addTeamData.teamName" name="teamName" label="队伍名" placeholder="队伍名"
                     :rules="[{ required: true, message: '请输入队伍名' }]" maxlength="15" />
-
+                <van-field name="uploader" label="头像">
+                    <template #input>
+                        <van-uploader :after-read="afterRead" v-model="fileList" multiple :max-count="2"/>
+                    </template>
+                </van-field>
                 <van-field v-model="addTeamData.description" rows="2" autosize label="队伍描述" type="textarea"
                     placeholder="请输入队伍描述" maxlength="200" />
 
@@ -37,7 +41,6 @@
                 </van-button>
             </div>
         </van-form>
-        {{ addTeamData }}
     </div>
 </template>
 
@@ -45,9 +48,8 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from '../plugins/myAxios';
-import { Toast } from 'vant';
 import moment from 'moment';
-import { showSuccessToast, showFailToast } from 'vant';
+import { showSuccessToast, showFailToast,showToast } from 'vant';
 
 const router = useRouter();
 
@@ -59,7 +61,8 @@ const initFormData = {
     "maxNum": 1,
     "password": "",
     "status": 0,
-    "teamName": ""
+    "teamName": "",
+    "avatarUrl": "",
 }
 //需要用户填写的表单数据
 const addTeamData = ref({ ...initFormData });
@@ -67,17 +70,17 @@ const addTeamData = ref({ ...initFormData });
 //日历
 const showCalendar = ref(false);
 const onConfirm = (date) => {
-console.log(moment(date).format("YYYY-MM-DD HH:MM:SS"))
-addTeamData.value.expireTime = moment(date).format("YYYY-MM-DD HH:MM:SS");
+    addTeamData.value.expireTime = moment(date).format("YYYY-MM-DD HH:MM:SS");
     showCalendar.value = false;
 };
+
 //点击提交按钮
 const onSubmit = async () => {
     const postData = {
         ...addTeamData.value,
         status: Number(addTeamData.value.status)
     }
-    const res = await myAxios.post("team/add", postData);
+    const res = await myAxios.post("/team/add", postData);
     if (res?.code === 0) {
         showSuccessToast('添加成功');
         router.push({
@@ -85,12 +88,32 @@ const onSubmit = async () => {
             replace: true,
         });
     } else {
-        if(res.description == ""){
+        if (res.description == "") {
             showFailToast("添加失败");
-        }else{
+        } else {
             showFailToast(res.description);
         }
-        
+
     }
 }
+
+const fileList = ref([]);
+
+const afterRead = async (file) => {
+       // 构建表单数据
+  const formData = new FormData();
+  formData.append('avatarUrl', file.file);
+    // 发送请求
+    const response = await myAxios.post("/upload", formData);
+
+    if (response.code === 0) {
+      addTeamData.value.avatarUrl = response.data
+    } else {
+        if (res.description == "") {
+            showFailToast("上传失败");
+        } else {
+            showFailToast(res.description);
+        }
+    }
+};
 </script>

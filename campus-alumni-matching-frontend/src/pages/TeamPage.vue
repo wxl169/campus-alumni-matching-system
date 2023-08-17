@@ -4,6 +4,7 @@
         <team-card-list :team-list="teamList"/>
     </div>
 </template>
+
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -23,13 +24,10 @@ import { showSuccessToast, showFailToast } from 'vant';
     
     onMounted(async() =>{
         const res = await myAxios.get("/team/list");
-        console.log(res);
         if(res.code === 0){ 
-            console.log(res.data)
             teamList.value = res.data.rows;
-           
         }else{
-            showFailToast("添加失败");
+            showFailToast("加载队伍失败，请刷新重试");
         } 
     })
 </script>
