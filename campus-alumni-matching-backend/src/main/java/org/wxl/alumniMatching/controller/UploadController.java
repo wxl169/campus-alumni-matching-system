@@ -2,6 +2,7 @@ package org.wxl.alumniMatching.controller;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,6 +44,10 @@ public class UploadController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请上传图片");
         }
         userService.getLoginUser(request);
-        return ResultUtils.success(uploadService.uploadImg(avatarUrl));
+        String img = uploadService.uploadImg(avatarUrl);
+        if (StringUtils.isBlank(img)){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"上传图片失败");
+        }
+        return ResultUtils.success(img);
     }
 }

@@ -331,7 +331,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (oldUser == null){
             throw new BusinessException(ErrorCode.NULL_ERROR,"暂无该用户");
         }
-
+        //用户密码控制在 8 ~ 15 位
+        int userPasswordLength = userUpdateDTO.getUserPassword().length();
+        if (userPasswordLength < UserConstant.USER_PASSWORD_MIN_LENGTH || userPasswordLength > UserConstant.USER_PASSWORD_MAX_LENGTH) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码长度不满要求");
+        }
+        //如果没有图片则设置默认图片
+        if(StringUtils.isBlank(oldUser.getAvatarUrl())  && StringUtils.isBlank(userUpdateDTO.getAvatarUrl()) ){
+            userUpdateDTO.setAvatarUrl(UserConstant.USER_DEFAULT_AVATAR);
+        }
         return userMapper.updateByUserUpdateDTO(userUpdateDTO);
     }
 

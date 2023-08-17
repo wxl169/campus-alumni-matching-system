@@ -10,6 +10,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.transaction.annotation.Transactional;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.contant.TeamConstant;
+import org.wxl.alumniMatching.contant.UserConstant;
 import org.wxl.alumniMatching.domain.dto.TeamAddDTO;
 import org.wxl.alumniMatching.domain.dto.TeamJoinDTO;
 import org.wxl.alumniMatching.domain.dto.TeamListDTO;
@@ -84,7 +85,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         if(StringUtils.isBlank(team.getAvatarUrl())){
             User user = userService.getById(loginUser.getId());
             if (StringUtils.isBlank(user.getAvatarUrl())){
-                team.setAvatarUrl("avatar.jpg");
+                team.setAvatarUrl(UserConstant.USER_DEFAULT_AVATAR);
             }else{
                 team.setAvatarUrl(user.getAvatarUrl());
             }
@@ -161,7 +162,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         if(StringUtils.isBlank(updateTeam.getAvatarUrl())){
             User user = userService.getById(oldTeam.getLeaderId());
             if (StringUtils.isBlank(user.getAvatarUrl())){
-                updateTeam.setAvatarUrl("avatar.jpg");
+                updateTeam.setAvatarUrl(UserConstant.USER_DEFAULT_AVATAR);
             }else{
                 updateTeam.setAvatarUrl(user.getAvatarUrl());
             }
@@ -224,7 +225,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
             pageNum = 1;
         }
         if (pageSize == null){
-            pageSize = 8;
+            pageSize = 5;
         }
         Page<Team> page = new Page<>(pageNum,pageSize);
 
@@ -259,15 +260,26 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
 
         Integer status = teamListDTO.getStatus();
         TeamStatusEnum statusEnum = TeamStatusEnum.getEnumByValue(status);
+        //如果状态为空->查询公开和加密的队伍
         if (statusEnum == null) {
-            statusEnum = TeamStatusEnum.PUBLIC;
+            queryWrapper.and(qw->qw
+                    .eq(Team::getStatus,TeamStatusEnum.PUBLIC.getValue())
+                    .or()
+                    .eq(Team::getStatus,TeamStatusEnum.SECRET.getValue())
+            );
+            //如果状态为私有，查询私有的
+        }else if (statusEnum.equals(TeamStatusEnum.PRIVATE)){
+            boolean isAdmin = userService.isAdmin(loginUser);
+            //只有管理员才能查看非公开的房间
+            if (!isAdmin) {
+                throw new BusinessException(ErrorCode.NO_AUTH,"无权限");
+            }
+            queryWrapper.eq(Team::getStatus, TeamStatusEnum.PRIVATE.getValue());
+        }else {
+            //如果状态为公开或加密，则查相应的队伍
+            queryWrapper.eq(Team::getStatus, statusEnum);
         }
-        boolean isAdmin = userService.isAdmin(loginUser);
-        //只有管理员才能查看非公开的房间
-        if (!isAdmin && statusEnum.equals(TeamStatusEnum.PRIVATE)) {
-            throw new BusinessException(ErrorCode.NO_AUTH,"无权限");
-        }
-        queryWrapper.eq(Team::getStatus, statusEnum.getValue());
+
         //不展示已过期的队伍
         queryWrapper.and(
                 qw->qw.gt(Team::getExpireTime,new Date())

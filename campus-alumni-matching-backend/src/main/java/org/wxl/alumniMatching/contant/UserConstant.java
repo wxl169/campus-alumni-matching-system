@@ -4,6 +4,7 @@ package org.wxl.alumniMatching.contant;
  * 用户常量
  * @author 16956
  */
+
 public interface UserConstant {
 
     /**
@@ -53,5 +54,7 @@ public interface UserConstant {
      * 账号存在空格
      */
     String USER_ACCOUNT_EXIT_SPACE = " ";
+
+    String USER_DEFAULT_AVATAR = "http://rzhrvkdnh.bkt.clouddn.com/2023/08/17/e4fd75551fed4062b1959de9c5f4703b.jpg";
 
 }
