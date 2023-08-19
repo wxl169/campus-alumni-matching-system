@@ -107,23 +107,23 @@ public class TeamController {
         return ResultUtils.success(teamService.deleteTeam(deleteDTO.getId(),loginUser));
     }
 
-//    /**
-//     * 分页获取队伍信息
-//     *
-//     * @param pageNum 页码
-//     * @param pageSize 每页数量
-//     * @param teamListDTO 查询条件
-//     * @return 获取的分页队伍数据
-//     */
-//    @ApiOperation(value = "分页获取队伍信息")
-//    @GetMapping("/list/page")
-//    public BaseResponse<PageVO> teamListByPage(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO){
-//
-//        return null;
-//    }
+    /**
+     * 查询队伍列表信息
+     *
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @param teamListDTO 查询条件
+     * @return 获取的分页队伍数据
+     */
+    @ApiOperation(value = "分页获取队伍信息")
+    @GetMapping("/list")
+    public BaseResponse<PageVO> teamListByPage(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO,HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(teamService.teamList(pageNum,pageSize,teamListDTO,loginUser));
+    }
 
     /**
-     * 查询队伍列表
+     * 分页获取队伍信息
      *
      * @param pageNum 页码
      * @param pageSize 每页数量
@@ -131,10 +131,10 @@ public class TeamController {
      * @return 获取的分页队伍数据
      */
     @ApiOperation(value = "查询队伍列表")
-    @GetMapping("/list")
+    @GetMapping("/list/page")
     public BaseResponse<PageVO> teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO,HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
-        return ResultUtils.success(teamService.teamList(pageNum,pageSize,teamListDTO,loginUser));
+        return ResultUtils.success(teamService.teamListPage(pageNum,pageSize,teamListDTO,loginUser));
     }
 
     /**

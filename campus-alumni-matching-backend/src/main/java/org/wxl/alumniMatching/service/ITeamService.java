@@ -45,7 +45,7 @@ public interface ITeamService extends IService<Team> {
     boolean deleteTeam(long teamId, User loginUser);
 
     /**
-     * 查询队伍列表
+     * 分页获取队伍信息
      *
      * @param pageNum 页码
      * @param pageSize 每页数量
@@ -53,7 +53,7 @@ public interface ITeamService extends IService<Team> {
      * @param loginUser 当前登录用户
      * @return 获取的分页队伍数据
      */
-    PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser);
+    PageVO teamListPage(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser);
 
     /**
      * 加入队伍
@@ -72,4 +72,15 @@ public interface ITeamService extends IService<Team> {
      * @return 判断是否退出成功
      */
     boolean quitTeam(Long teamId, User loginUser);
+
+    /**
+     * 分页获取队伍信息
+     *
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @param teamListDTO 查询条件
+     * @param loginUser 当前登录信息
+     * @return 获取的分页队伍数据
+     */
+    PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser);
 }

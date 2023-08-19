@@ -211,16 +211,15 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
     }
 
     /**
-     * 查询队伍列表
+     * 分页获取队伍信息
      *
      * @param pageNum 页码
      * @param pageSize 每页数量
      * @param teamListDTO 查询条件
-     * @param loginUser 当前登录用户
      * @return 获取的分页队伍数据
      */
     @Override
-    public PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser) {
+    public PageVO teamListPage(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser) {
         if (pageNum == null){
             pageNum = 1;
         }
@@ -434,6 +433,29 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         }
         // 移除关系
         return userTeamService.remove(queryWrapper);
+    }
+
+    /**
+     * TODO 分页获取队伍信息
+     *
+     * @param pageNum 页码
+     * @param pageSize 每页数量
+     * @param teamListDTO 查询条件
+     * @param loginUser 当前登录信息
+     * @return 获取的分页队伍数据
+     */
+    @Override
+    public PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser) {
+        if (pageNum == null){
+            pageNum = 1;
+        }
+        if (pageSize == null){
+            pageSize = 5;
+        }
+        Page<Team> page = new Page<>(pageNum,pageSize);
+        LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();
+
+        return null;
     }
 
 
