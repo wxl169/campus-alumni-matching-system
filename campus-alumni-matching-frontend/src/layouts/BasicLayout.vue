@@ -1,6 +1,6 @@
 <template>
  <van-nav-bar
-  title="标题"  
+ :title="title"
   left-arrow
   @click-left="onClickLeft"
   @click-right="onClickRight"
@@ -28,9 +28,24 @@
 <script setup>
 import { ref } from 'vue';
 import { showToast } from 'vant';
-import { useRouter } from 'vue-router';
+import routes from "../config/route";
+import { useRouter } from "vue-router";
 
-const router = useRouter()
+const router = useRouter();
+const DEFAULT_TITLE = '学友匹配';
+const title = ref(DEFAULT_TITLE);
+
+/**
+ * 根据路由切换标题
+ */
+router.beforeEach((to, from) => {
+  const toPath = to.path;
+  const route = routes.find((route) => {
+    return toPath == route.path;
+  })
+  title.value = route?.title ?? DEFAULT_TITLE;
+})
+
 
  const onClickLeft = () => {
   router.back();

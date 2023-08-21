@@ -11,16 +11,16 @@ import TeamUpdatePage from "../pages/TeamUpdatePage.vue";
 
 // 2. 定义一些路由
 const routes = [
-    { path: '/', component: Index },
-    { path: '/team', component: Team },
-    { path: '/user', component: User },
-    { path: '/search', component: SearchPage },
-    { path: '/user/edit', component: UserEditPage },
-    { path: '/user/list', component: SearchResultPage },
-    { path: '/user/home', component: UserHomePage},
-    { path: '/user/login', component: UserLoginPage},
-    { path: '/team/add', component: TeamAddPage},
-    { path: '/team/update', component: TeamUpdatePage},
+    { path: '/', title: '学友匹配',  component: Index },
+    { path: '/team' , title: '队伍列表', component: Team },
+    { path: '/user', title: '个人信息',component: User },
+    { path: '/search', title: '搜索用户', component: SearchPage },
+    { path: '/user/edit', title: '编辑信息', component: UserEditPage },
+    { path: '/user/list', title: '用户列表', component: SearchResultPage },
+    { path: '/user/home', title: '个人信息', component: UserHomePage},
+    { path: '/user/login', title: '登录', component: UserLoginPage},
+    { path: '/team/add', title: '创建队伍', component: TeamAddPage},
+    { path: '/team/update', title: '更新队伍', component: TeamUpdatePage},
   ]
 
 export default routes;

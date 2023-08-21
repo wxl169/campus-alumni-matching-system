@@ -1,6 +1,6 @@
 <template>
-    <van-card
-    v-for="user in userList"
+  <van-skeleton title avatar :row="3" :loading="props.loading" v-for="user in props.userList">
+      <van-card
     :thumb-link="user.id"
     :desc="`个人介绍：${user.profile}`"
     :title="`${user.username} (${user.userAccount})`"
@@ -22,16 +22,20 @@
       <van-button size="mini">联系我</van-button>
     </template>
   </van-card>
+  </van-skeleton>
+
 </template>
 <script setup lang="ts">
 import { UserType } from '../models/user';
 
 
 interface UserCardListProps{
-    userList:UserType[];
+  loading : boolean;
+  userList : UserType[];
 }
 
 const props = withDefaults(defineProps<UserCardListProps>(),{
+    loading : true,
     userList:[] as UserType[],
 });
 
