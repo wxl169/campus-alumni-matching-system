@@ -213,4 +213,18 @@ public class UserController {
     }
 
 
+    /**
+     * 获取最匹配的用户
+     * @param pageNum 当前页码
+     * @param pageSize 每页多少条数据
+     * @param request 当前登录用户信息
+     * @return 返回最匹配用户的列表信息
+     */
+    @GetMapping("/match")
+    public BaseResponse<PageVO> matchUsers(Integer pageNum,Integer pageSize, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getMatchUsers(pageNum,pageSize,loginUser));
+    }
+
+
 }

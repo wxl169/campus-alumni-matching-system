@@ -103,13 +103,20 @@ public interface IUserService extends IService<User> {
 
     /**
      * 主页推荐用户信息列表
-     *
+     * @param pageNum 当前页码
+     * @param pageSize 每页大小
      * @return 主页推荐用户的信息列表
      */
     PageVO getRecommendUser(Integer pageNum,Integer pageSize, HttpServletRequest request);
 
-
-
+    /**
+     * 获取最匹配的用户
+     * @param pageNum 当前页码
+     * @param pageSize 每页多少条数据
+     * @param loginUser 当前登录用户信息
+     * @return 返回最匹配用户的列表信息
+     */
+    PageVO getMatchUsers(Integer pageNum, Integer pageSize, User loginUser);
 
 
     /**
@@ -128,6 +135,7 @@ public interface IUserService extends IService<User> {
      */
     boolean isAdmin(HttpServletRequest request);
     boolean isAdmin(User loginUser);
+
 
 
 }

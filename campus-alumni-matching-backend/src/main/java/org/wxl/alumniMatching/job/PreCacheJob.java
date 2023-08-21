@@ -57,7 +57,7 @@ public class PreCacheJob {
                     LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
                     //排除自己的信息
                     queryWrapper.ne(User::getId,userId);
-                    Page<User> userPage = userService.page(new Page<>(1, 20), queryWrapper);
+                    Page<User> userPage = userService.page(new Page<>(1, 10), queryWrapper);
                     List<UserTagVO> userTagVOS = BeanCopyUtils.copyBeanList(userPage.getRecords(), UserTagVO.class);
                     PageVO pageVO = new PageVO(userTagVOS,userPage.getTotal());
                     String redisKey = String.format("alumniMatching:user:recommend:%s", userId);

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
@@ -22,14 +23,12 @@ import org.wxl.alumniMatching.mapper.UserMapper;
 import org.wxl.alumniMatching.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.wxl.alumniMatching.utils.AlgorithmUtils;
 import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -378,11 +377,73 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return pageVO;
     }
 
+    /**
+     * 获取最匹配的用户
+     * @param pageNum 当前页码
+     * @param pageSize 每页多少条数据
+     * @param loginUser 当前登录用户信息
+     * @return 返回最匹配用户的列表信息
+     */
+    @Override
+    public PageVO getMatchUsers(Integer pageNum, Integer pageSize, User loginUser) {
+        if (pageNum == null){
+            pageNum = 1;
+        }
+        if (pageSize == null){
+            pageSize = 10;
+        }
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.select(User::getId,User::getTags)
+                .isNotNull(User::getTags);
+        List<User> userList = this.list(queryWrapper);
+        String tags = loginUser.getTags();
+        Gson gson = new Gson();
+        List<String> tagList = gson.fromJson(tags,new TypeToken<List<String>>(){}.getType());
+        //用户列表的下标 =》 相似度
+        List<Pair<User,Long>> list = new ArrayList<>();
+        //依次计算所有用户和当前用户的相似度
+        for (User user : userList) {
+            //限制list长度
+            if (list.size() >= 5){
+                 break;
+            }
+            String userTags = user.getTags();
+            //无标签或者为当前用户自己
+            if (StringUtils.isBlank(userTags) || user.getId().equals(loginUser.getId())) {
+                continue;
+            }
+            List<String> userTagList = gson.fromJson(userTags, new TypeToken<List<String>>() {
+            }.getType());
+            //计算分数
+            long distance = AlgorithmUtils.minDistance(tagList, userTagList);
+            list.add(new Pair<>(user, distance));
+        }
+        //按编辑距离从小到大排序
+        List<Pair<User,Long>> topUserPairList = list.stream().
+                sorted((a,b) -> (int)(a.getValue() - b.getValue()))
+                //分页
+                .skip((long) (pageNum - 1) * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+        // 原本顺序的 userId 列表
+        List<Long> userIdList = topUserPairList.stream().map(pair -> pair.getKey().getId()).collect(Collectors.toList());
+       LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
+       userQueryWrapper.in(User::getId,userIdList);
+        // 1, 3, 2
+        // User1、User2、User3
+        // 1 => User1, 2 => User2, 3 => User3
+        Map<Long, List<UserTagVO>> userIdUserListMap = this.list(userQueryWrapper)
+                .stream()
+                .map(user -> BeanCopyUtils.copyBean(user,UserTagVO.class))
+                .collect(Collectors.groupingBy(UserTagVO::getId));
+        List<UserTagVO> finalUserList = new ArrayList<>();
+        for (Long userId : userIdList) {
+            finalUserList.add(userIdUserListMap.get(userId).get(0));
+        }
+        PageVO pageVO = new PageVO(finalUserList, (long) list.size());
+        return pageVO;
 
-
-
-
-
+    }
 
 
     /**
