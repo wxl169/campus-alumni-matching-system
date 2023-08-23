@@ -19,8 +19,9 @@
  <!-- v-model="active" @change="onChange" -->
 <van-tabbar route>
   <van-tabbar-item icon="home-o" name="index" replace to="/">主页</van-tabbar-item>
-  <van-tabbar-item icon="search" name="team" replace to="team">队伍</van-tabbar-item>
-  <van-tabbar-item icon="friends-o" name="user" replace to="user">个人</van-tabbar-item>
+  <van-tabbar-item icon="search" name="team" replace to="/team">队伍</van-tabbar-item>
+  <van-tabbar-item icon="friends-o" name="user" replace to="/user/home">个人</van-tabbar-item>
+  <van-tabbar-item icon="friends-o" name="user" replace to="/user/home">个人</van-tabbar-item>
 </van-tabbar>
 
 </template>
