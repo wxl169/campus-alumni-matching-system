@@ -1,29 +1,23 @@
 <template>
- <van-nav-bar
- :title="title"
-  left-arrow
-  @click-left="onClickLeft"
-  @click-right="onClickRight"
-  fixed="true"
- >
-  <template #right>
-    <van-icon name="search" size="18" />
-  </template>
-</van-nav-bar>
+  <van-nav-bar :title="title" left-arrow @click-left="onClickLeft" @click-right="onClickRight" fixed="true">
+    <template #right>
+      <van-icon name="search" size="18" />
+    </template>
+  </van-nav-bar>
 
-<div id="content">
-  <!-- 路由 -->
-  <router-view/>
-</div>
 
- <!-- v-model="active" @change="onChange" -->
-<van-tabbar route>
-  <van-tabbar-item icon="home-o" name="index" replace to="/">主页</van-tabbar-item>
-  <van-tabbar-item icon="search" name="team" replace to="/team">队伍</van-tabbar-item>
-  <van-tabbar-item icon="friends-o" name="user" replace to="/user/home">个人</van-tabbar-item>
-  <van-tabbar-item icon="friends-o" name="user" replace to="/user/home">个人</van-tabbar-item>
-</van-tabbar>
+  <div id="content">
+    <!-- 路由 -->
+    <router-view />
+  </div>
 
+  <!-- v-model="active" @change="onChange" -->
+  <van-tabbar route>
+    <van-tabbar-item icon="records" name="index" replace to="/">计划</van-tabbar-item>
+    <van-tabbar-item icon="friends-o" name="user" replace to="/userTeam">通讯录</van-tabbar-item>
+    <van-tabbar-item icon="search" name="team" replace to="">发现</van-tabbar-item>
+    <van-tabbar-item icon="user-o" name="user" replace to="">我</van-tabbar-item>
+  </van-tabbar>
 </template>
 
 <script setup>
@@ -48,19 +42,18 @@ router.beforeEach((to, from) => {
 })
 
 
- const onClickLeft = () => {
+const onClickLeft = () => {
   router.back();
- };
- const onClickRight = () => {
+};
+const onClickRight = () => {
   router.push('/search')
- };
+};
 
-//  const active = ref("index");
-//  const onChange = (index) => showToast(`标签 ${index}`);
+
 </script>
 <style scoped>
-  #content{
-    padding-top: 50px;
-    padding-bottom: 50px;
-  }
+#content {
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
 </style>

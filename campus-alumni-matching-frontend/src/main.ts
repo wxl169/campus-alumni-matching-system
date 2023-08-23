@@ -2,6 +2,8 @@ import { createApp } from "vue";
 import "./style.css";
 import App from "./App.vue";
 import {
+  DropdownMenu, 
+  DropdownItem ,
   Button,
   Toast,
   Icon,
@@ -20,8 +22,6 @@ import {
   Field,
   ConfigProvider,
   Card,
-} from "vant";
-import {
   Empty,
   DatePicker,
   Uploader,
@@ -31,6 +31,10 @@ import {
   SkeletonImage,
   SkeletonAvatar,
   SkeletonParagraph,
+  Grid, 
+  GridItem,
+  IndexBar, 
+  IndexAnchor,  
 } from "vant";
 import "vant/es/toast/style";
 import * as VueRouter from "vue-router";
@@ -64,6 +68,12 @@ app.use(SkeletonTitle);
 app.use(SkeletonImage);
 app.use(SkeletonAvatar);
 app.use(SkeletonParagraph);
+app.use(DropdownMenu);
+app.use(DropdownItem);
+app.use(Grid);
+app.use(GridItem);
+app.use(IndexBar);
+app.use(IndexAnchor);
 const router = VueRouter.createRouter({
   // 4. 内部提供了 history 模式的实现。为了简单起见，我们在这里使用 hash 模式。
   history: VueRouter.createWebHistory(),
