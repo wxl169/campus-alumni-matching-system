@@ -3,13 +3,12 @@
         <van-cell title="新的朋友" is-link to="/search" />
         <van-cell title="新的队伍" is-link to="index" />
     </div>
-    <van-divider />
     <div id="joinUserOrTeam">
         <van-tabs v-model:active="active" @change="onTabChange">
             <van-tab title="队伍" name="team" />
             <van-tab title="好友" name="user" />
         </van-tabs>
-       
+    
         <AddUserList :userList ="userList"  /> 
         <JoinTeamList :teamList="teamList"  />
         <van-empty v-if="teamList?.length < 1 && userList?.length < 1" description="数据为空" /> 
@@ -55,9 +54,7 @@ onMounted(() => {
  * 已加入的队伍
  */
 const joinTeamList = async () => {
-    const res = await myAxios.get("/team/list/join", {
-
-    });
+    const res = await myAxios.get("/team/list/join");
     if (res?.code === 0) {
         teamList.value = res.data;
     } else {

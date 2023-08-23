@@ -4,6 +4,7 @@ import org.wxl.alumniMatching.domain.entity.Team;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.UserListVO;
+import org.wxl.alumniMatching.domain.vo.UserShowVO;
 import org.wxl.alumniMatching.domain.vo.UserTagVO;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public interface TeamMapper extends BaseMapper<Team> {
      * @param teamUserListId 队伍的主键
      * @return
      */
-    List<UserTagVO> getUserList(Long teamUserListId);
+    List<UserShowVO> getUserList(Long teamUserListId);
 
     /**
      * 获取当前用户加入的队伍信息

@@ -12,7 +12,7 @@ import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.JoinTeamListVO;
 import org.wxl.alumniMatching.domain.vo.PageVO;
 import org.wxl.alumniMatching.domain.vo.TeamByIdVO;
-import org.wxl.alumniMatching.domain.vo.TeamUserListVo;
+import org.wxl.alumniMatching.domain.vo.TeamUserListVO;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.ITeamService;
 import org.wxl.alumniMatching.service.IUserService;
@@ -86,14 +86,30 @@ public class TeamController {
     @ApiOperation(value = "获取队伍信息")
     @GetMapping("/get")
     public BaseResponse<TeamByIdVO> getTeamById(Long teamId) {
-        if (teamId == null || teamId < 1) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求数据错误");
-        }
+        //判断teamId是否符合要求
+        judgeTeamId(teamId);
         Team team = teamService.getById(teamId);
         if (team == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR,"队伍不存在");
         }
         return ResultUtils.success(BeanCopyUtils.copyBean(teamService.getById(teamId),TeamByIdVO.class));
+    }
+
+    /**
+     * 获取队伍信息及成员信息
+     *
+     * @param teamId 队伍id
+     * @return 返回队伍及成员信息
+     */
+    @ApiOperation(value = "获取队伍信息及成员信息")
+    @GetMapping("/get/detail")
+    public BaseResponse<TeamUserListVO> getTeamAndUser(Long teamId) {
+        judgeTeamId(teamId);
+        TeamUserListVO team = teamService.getTeamAndUser(teamId);
+        if (team == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR,"队伍不存在");
+        }
+        return ResultUtils.success(team);
     }
 
 
@@ -104,7 +120,7 @@ public class TeamController {
      * @return 判断是否删除成功
      */
     @ApiOperation(value = "删除队伍信息||解散队伍")
-    @PostMapping("/delete")
+    @DeleteMapping("/delete")
     public BaseResponse<Boolean> deleteTeam(@RequestBody DeleteDTO deleteDTO, HttpServletRequest request) {
         if (deleteDTO == null || deleteDTO.getId() < 1) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
@@ -170,9 +186,7 @@ public class TeamController {
     @ApiOperation(value = "用户退出队伍")
     @PostMapping("/quit")
     public BaseResponse<Boolean> quitTeam(Long teamId, HttpServletRequest request) {
-        if (teamId == null || teamId < 1) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
-        }
+        judgeTeamId(teamId);
         User loginUser = userService.getLoginUser(request);
         boolean result = teamService.quitTeam(teamId, loginUser);
         return ResultUtils.success(result);
@@ -190,6 +204,17 @@ public class TeamController {
     public BaseResponse<List<JoinTeamListVO>> userJoinTeamList(HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         return ResultUtils.success(teamService.userJoinTeamList(loginUser)) ;
+    }
+
+
+    /**
+     * 判断teamId是否符合要求
+     * @param teamId 队伍id
+     */
+    private void judgeTeamId(Long teamId){
+        if (teamId == null || teamId < 1) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求数据错误");
+        }
     }
 
 }

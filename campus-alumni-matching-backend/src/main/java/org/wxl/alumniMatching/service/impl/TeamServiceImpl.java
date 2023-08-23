@@ -1,7 +1,6 @@
 package org.wxl.alumniMatching.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -286,10 +285,10 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         page(page,queryWrapper);
 
         //关联查询创建人的用户信息
-        List<TeamUserListVo> teamUserListVos = BeanCopyUtils.copyBeanList(page.getRecords(), TeamUserListVo.class);
+        List<TeamUserListVO> teamUserListVos = BeanCopyUtils.copyBeanList(page.getRecords(), TeamUserListVO.class);
         teamUserListVos = teamUserListVos.stream().peek(teamUserList -> {
             Long teamUserListId = teamUserList.getId();
-            List<UserTagVO> userList = teamMapper.getUserList(teamUserListId);
+            List<UserShowVO> userList = teamMapper.getUserList(teamUserListId);
             teamUserList.setUserList(userList);
         }).collect(Collectors.toList());
         return new PageVO(teamUserListVos,page.getTotal());
@@ -466,6 +465,23 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
     public List<JoinTeamListVO> userJoinTeamList(User loginUser) {
         List<Team> teamList = teamMapper.getUserJoinTeamList(loginUser.getId());
         return BeanCopyUtils.copyBeanList(teamList, JoinTeamListVO.class);
+    }
+
+    /**
+     * 获取队伍信息及成员信息
+     *
+     * @param teamId 队伍id
+     * @return 返回队伍及成员信息
+     */
+    @Override
+    public TeamUserListVO getTeamAndUser(Long teamId) {
+        LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(teamId != null&&teamId > 0,Team::getId,teamId);
+        Team team = this.getOne(queryWrapper);
+        TeamUserListVO teamUserListVO = BeanCopyUtils.copyBean(team, TeamUserListVO.class);
+        List<UserShowVO> userList = teamMapper.getUserList(teamId);
+        teamUserListVO.setUserList(userList);
+        return teamUserListVO;
     }
 
 

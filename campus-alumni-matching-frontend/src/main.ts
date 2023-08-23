@@ -34,7 +34,9 @@ import {
   Grid, 
   GridItem,
   IndexBar, 
-  IndexAnchor,  
+  IndexAnchor, 
+  Popup,
+  Space,
 } from "vant";
 import "vant/es/toast/style";
 import * as VueRouter from "vue-router";
@@ -74,6 +76,10 @@ app.use(Grid);
 app.use(GridItem);
 app.use(IndexBar);
 app.use(IndexAnchor);
+app.use(Popup);
+app.use(Space);
+
+
 const router = VueRouter.createRouter({
   // 4. 内部提供了 history 模式的实现。为了简单起见，我们在这里使用 hash 模式。
   history: VueRouter.createWebHistory(),

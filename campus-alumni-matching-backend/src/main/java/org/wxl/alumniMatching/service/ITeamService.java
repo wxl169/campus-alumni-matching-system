@@ -10,6 +10,7 @@ import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.JoinTeamListVO;
 import org.wxl.alumniMatching.domain.vo.PageVO;
 import org.wxl.alumniMatching.domain.vo.TeamByIdVO;
+import org.wxl.alumniMatching.domain.vo.TeamUserListVO;
 
 import java.util.List;
 
@@ -96,4 +97,12 @@ public interface ITeamService extends IService<Team> {
      * @return 返回已加入队伍列表
      */
     List<JoinTeamListVO> userJoinTeamList(User loginUser);
+
+    /**
+     * 获取队伍信息及成员信息
+     *
+     * @param teamId 队伍id
+     * @return 返回队伍及成员信息
+     */
+    TeamUserListVO getTeamAndUser(Long teamId);
 }

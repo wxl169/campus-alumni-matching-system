@@ -1,8 +1,11 @@
 <template>
-  <van-nav-bar :title="title" left-arrow @click-left="onClickLeft" @click-right="onClickRight" fixed="true">
-    <template #right>
+  <van-nav-bar :title="title" left-arrow @click-left="onClickLeft" @click-right="onClickRight" fixed="true"  
+      v-if="route.meta.showHeader" 
+      :left-arrow="route.meta.showBack"
+      >
+    <!-- <template #right>
       <van-icon name="search" size="18" />
-    </template>
+    </template> -->
   </van-nav-bar>
 
 
@@ -12,11 +15,11 @@
   </div>
 
   <!-- v-model="active" @change="onChange" -->
-  <van-tabbar route>
+  <van-tabbar v-if="route.meta.showBottom" route>
     <van-tabbar-item icon="records" name="index" replace to="/">计划</van-tabbar-item>
     <van-tabbar-item icon="friends-o" name="user" replace to="/userTeam">通讯录</van-tabbar-item>
     <van-tabbar-item icon="search" name="team" replace to="">发现</van-tabbar-item>
-    <van-tabbar-item icon="user-o" name="user" replace to="">我</van-tabbar-item>
+    <van-tabbar-item icon="user-o" name="user" replace to="/user/home">我</van-tabbar-item>
   </van-tabbar>
 </template>
 
@@ -24,8 +27,9 @@
 import { ref } from 'vue';
 import { showToast } from 'vant';
 import routes from "../config/route";
-import { useRouter } from "vue-router";
+import { useRouter,useRoute} from "vue-router";
 
+const route = useRoute();
 const router = useRouter();
 const DEFAULT_TITLE = '学友匹配';
 const title = ref(DEFAULT_TITLE);

@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 
 /**
@@ -18,4 +19,9 @@ public class JoinTeamListVO implements Serializable {
     private String teamName;
     @ApiModelProperty(value = "群头像")
     private String avatarUrl;
+    @ApiModelProperty(value = "过期时间")
+    private LocalDateTime expireTime;
+
+    @ApiModelProperty(value = "队长id")
+    private Long leaderId;
 }
