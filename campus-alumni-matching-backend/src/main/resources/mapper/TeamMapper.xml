@@ -26,4 +26,10 @@
                 where t.id = #{teamUserListId};
     </select>
 
+    <select id="getUserJoinTeamList" resultType="org.wxl.alumniMatching.domain.entity.Team"
+            parameterType="java.lang.Long">
+        select t.id,t.team_name,t.avatar_url,t.id
+        from tb_team t left join tb_user_team ut on t.id = ut.team_id WHERE ut.user_id = #{userId};
+    </select>
+
 </mapper>

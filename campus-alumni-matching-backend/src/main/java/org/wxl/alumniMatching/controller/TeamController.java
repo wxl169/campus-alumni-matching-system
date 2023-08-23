@@ -9,15 +9,19 @@ import org.wxl.alumniMatching.common.ResultUtils;
 import org.wxl.alumniMatching.domain.dto.*;
 import org.wxl.alumniMatching.domain.entity.Team;
 import org.wxl.alumniMatching.domain.entity.User;
+import org.wxl.alumniMatching.domain.vo.JoinTeamListVO;
 import org.wxl.alumniMatching.domain.vo.PageVO;
 import org.wxl.alumniMatching.domain.vo.TeamByIdVO;
+import org.wxl.alumniMatching.domain.vo.TeamUserListVo;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.ITeamService;
 import org.wxl.alumniMatching.service.IUserService;
+import org.wxl.alumniMatching.service.IUserTeamService;
 import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 
 /**
@@ -32,6 +36,8 @@ public class TeamController {
     private ITeamService teamService;
     @Resource
     private IUserService userService;
+    @Resource
+    private  IUserTeamService userTeamService;
 
 
     /**
@@ -173,5 +179,17 @@ public class TeamController {
     }
 
 
+    /**
+     * 查询当前用户已加入的队伍
+     *
+     * @param request 获取当前登录用户
+     * @return 返回已加入队伍列表
+     */
+    @ApiOperation(value = "用户已加入的队伍")
+    @GetMapping("/list/join")
+    public BaseResponse<List<JoinTeamListVO>> userJoinTeamList(HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(teamService.userJoinTeamList(loginUser)) ;
+    }
 
 }

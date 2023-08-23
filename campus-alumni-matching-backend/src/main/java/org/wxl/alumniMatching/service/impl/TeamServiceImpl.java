@@ -19,9 +19,7 @@ import org.wxl.alumniMatching.domain.entity.Team;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.entity.UserTeam;
 import org.wxl.alumniMatching.domain.enums.TeamStatusEnum;
-import org.wxl.alumniMatching.domain.vo.PageVO;
-import org.wxl.alumniMatching.domain.vo.TeamUserListVo;
-import org.wxl.alumniMatching.domain.vo.UserTagVO;
+import org.wxl.alumniMatching.domain.vo.*;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.mapper.TeamMapper;
 import org.wxl.alumniMatching.service.ITeamService;
@@ -456,6 +454,18 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();
 
         return null;
+    }
+
+    /**
+     * 查询当前用户已加入的队伍
+     *
+     * @param loginUser 获取当前登录用户
+     * @return 返回已加入队伍列表
+     */
+    @Override
+    public List<JoinTeamListVO> userJoinTeamList(User loginUser) {
+        List<Team> teamList = teamMapper.getUserJoinTeamList(loginUser.getId());
+        return BeanCopyUtils.copyBeanList(teamList, JoinTeamListVO.class);
     }
 
 

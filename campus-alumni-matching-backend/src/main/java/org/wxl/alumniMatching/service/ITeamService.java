@@ -7,7 +7,11 @@ import org.wxl.alumniMatching.domain.dto.TeamUpdateDTO;
 import org.wxl.alumniMatching.domain.entity.Team;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.wxl.alumniMatching.domain.entity.User;
+import org.wxl.alumniMatching.domain.vo.JoinTeamListVO;
 import org.wxl.alumniMatching.domain.vo.PageVO;
+import org.wxl.alumniMatching.domain.vo.TeamByIdVO;
+
+import java.util.List;
 
 /**
  * <p>
@@ -83,4 +87,13 @@ public interface ITeamService extends IService<Team> {
      * @return 获取的分页队伍数据
      */
     PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser);
+
+
+    /**
+     * 查询当前用户已加入的队伍
+     *
+     * @param loginUser 获取当前登录用户
+     * @return 返回已加入队伍列表
+     */
+    List<JoinTeamListVO> userJoinTeamList(User loginUser);
 }

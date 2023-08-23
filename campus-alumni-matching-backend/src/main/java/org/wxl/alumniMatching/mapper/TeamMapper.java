@@ -23,4 +23,11 @@ public interface TeamMapper extends BaseMapper<Team> {
      * @return
      */
     List<UserTagVO> getUserList(Long teamUserListId);
+
+    /**
+     * 获取当前用户加入的队伍信息
+     * @param userId 当前用户的id
+     * @return  获取当前用户加入的队伍信息
+     */
+    List<Team> getUserJoinTeamList(Long userId);
 }
