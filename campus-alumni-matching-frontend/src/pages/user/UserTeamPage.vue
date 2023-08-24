@@ -16,13 +16,13 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useRouter } from "vue-router";
-import JoinTeamList from "../components/JoinTeamList.vue";
-import AddUserList from "../components/AddUserList.vue";
+import JoinTeamList from "../../components/JoinTeamList.vue";
+import AddUserList from "../../components/AddUserList.vue";
 import { onMounted, ref } from "vue";
-import myAxios from "../plugins/myAxios";
-import { showSuccessToast, showFailToast } from 'vant';
+import myAxios from "../../plugins/myAxios";
+import { showFailToast } from 'vant';
 
 const active = ref('team')
 const router = useRouter();

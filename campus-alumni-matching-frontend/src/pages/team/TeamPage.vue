@@ -8,12 +8,12 @@
     </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import TeamCardList from '../components/TeamCardList.vue';
-import myAxios from '../plugins/myAxios';
-import { showSuccessToast, showFailToast } from 'vant';
+import TeamCardList from '../../components/TeamCardList.vue';
+import myAxios from '../../plugins/myAxios';
+
 
 const router = useRouter();
 

@@ -6,13 +6,12 @@
 
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref,onMounted} from 'vue';
 import { useRoute } from 'vue-router';
-import myAxios from "../plugins/myAxios"
-import { showSuccessToast, showFailToast } from 'vant';
-import qs from 'qs';
-import UserCardList from '../components/UserCardList.vue';
+import myAxios from "../../plugins/myAxios"
+import { showFailToast } from 'vant';
+import UserCardList from '../../components/UserCardList.vue';
 
 
 

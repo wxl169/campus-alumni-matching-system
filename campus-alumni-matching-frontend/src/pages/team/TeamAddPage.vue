@@ -47,7 +47,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import myAxios from '../plugins/myAxios';
+import myAxios from '../../plugins/myAxios';
 import moment from 'moment';
 import { showSuccessToast, showFailToast,showToast } from 'vant';
 
