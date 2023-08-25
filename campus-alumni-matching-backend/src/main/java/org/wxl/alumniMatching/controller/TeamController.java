@@ -130,18 +130,16 @@ public class TeamController {
     }
 
     /**
-     * 查询队伍列表信息
+     * 查询队伍列表信息、但不包含已加入队伍的信息
      *
-     * @param pageNum 页码
-     * @param pageSize 每页数量
      * @param teamListDTO 查询条件
      * @return 获取的分页队伍数据
      */
     @ApiOperation(value = "分页获取队伍信息")
     @GetMapping("/list")
-    public BaseResponse<PageVO> teamListByPage(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO,HttpServletRequest request){
+    public BaseResponse<PageVO> teamListByPage(TeamListDTO teamListDTO,HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
-        return ResultUtils.success(teamService.teamList(pageNum,pageSize,teamListDTO,loginUser));
+        return ResultUtils.success(teamService.teamList(teamListDTO,loginUser));
     }
 
     /**

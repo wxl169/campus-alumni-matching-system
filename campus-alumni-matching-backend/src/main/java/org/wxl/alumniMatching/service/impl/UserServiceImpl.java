@@ -244,12 +244,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     /**
      * 根据标签搜索用户
-     *
+     * @param pageNum 页面
+     * @param pageSize 每页数据量
      * @param tagNameList 用户要拥有的标签
      * @return 所有用户信息列表
      */
     @Override
-    public List<UserTagVO> searchUserByTags(List<String> tagNameList){
+    public PageVO searchUserByTags(Integer pageNum,Integer pageSize,List<String> tagNameList){
+        if (pageNum == null){
+            pageNum = 1;
+        }
+        if (pageSize == null){
+            pageSize = 30;
+        }
         if (CollectionUtils.isEmpty(tagNameList)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"标签为空");
         }
@@ -284,8 +291,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 }
             }
             return true;
-        }).collect(Collectors.toList());
-        return BeanCopyUtils.copyBeanList(users, UserTagVO.class);
+        })
+                .skip((long) (pageNum - 1) * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+
+        return new PageVO(BeanCopyUtils.copyBeanList(users, UserTagVO.class), (long) users.size());
     }
 
     /**
@@ -294,11 +305,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return 所有用户信息列表
      */
     @Override
-    public List<UserTagVO> searchUserList() {
+    public PageVO searchUserList(Integer pageNum,Integer pageSize) {
+        if (pageNum == null){
+            pageNum = 1;
+        }
+        if (pageSize == null){
+            pageSize = 30;
+        }
+        Page<User> page = new Page<>(pageNum,pageSize);
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUserStatus,UserConstant.USER_STATUS_NORMAL);
-        List<User> users = userMapper.selectList(queryWrapper);
-        return BeanCopyUtils.copyBeanList(users, UserTagVO.class);
+        page(page,queryWrapper);
+        return  new PageVO(BeanCopyUtils.copyBeanList(page.getRecords(), UserTagVO.class),page.getTotal());
+
     }
 
 
@@ -439,8 +458,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         for (Long userId : userIdList) {
             finalUserList.add(userIdUserListMap.get(userId).get(0));
         }
-        PageVO pageVO = new PageVO(finalUserList, (long) list.size());
-        return pageVO;
+        return new PageVO(finalUserList, (long) list.size());
 
     }
 

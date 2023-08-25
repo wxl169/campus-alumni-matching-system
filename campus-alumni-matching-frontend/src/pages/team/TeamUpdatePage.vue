@@ -72,10 +72,11 @@ const initFormData = {
 const updateTeamData = ref({ ...initFormData })
 
 const route = useRoute();
-const teamId = route.params.id
+let teamId = ref(0)
 
 // 获取之前的房间信息
 onMounted(async () => {
+    teamId = route.query.teamId;
     if (Number(teamId) <= 0) {
         showFailToast('加载房间失败');
         return;

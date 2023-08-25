@@ -32,6 +32,7 @@ import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -433,26 +434,41 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
     }
 
     /**
-     * TODO 分页获取队伍信息
+     * 分页获取队伍信息、但不包括已加入队伍的信息s
      *
-     * @param pageNum 页码
-     * @param pageSize 每页数量
      * @param teamListDTO 查询条件
      * @param loginUser 当前登录信息
      * @return 获取的分页队伍数据
      */
     @Override
-    public PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser) {
-        if (pageNum == null){
-            pageNum = 1;
-        }
-        if (pageSize == null){
-            pageSize = 5;
-        }
-        Page<Team> page = new Page<>(pageNum,pageSize);
+    @Transactional(rollbackFor = Exception.class)
+    public PageVO teamList(TeamListDTO teamListDTO, User loginUser) {
+        String searchText = teamListDTO.getSearchText();
         LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();
-
-        return null;
+        //如果关键词不为空，根据队伍名和介绍查询
+        queryWrapper.and(StringUtils.isNotBlank(searchText),qw -> qw
+                .like(Team::getTeamName,searchText)
+                .or()
+                .like(Team::getDescription,searchText)
+                )
+                .and(
+                     qw->qw.gt(Team::getExpireTime,new Date())
+                        .or()
+                        .isNull(Team::getExpireTime)
+                )
+                .ne(Team::getStatus,TeamStatusEnum.PRIVATE.getValue());
+        List<Team> teams = this.list(queryWrapper);
+        List<Long> teamIds = userTeamService.getJoinTeamId(loginUser.getId());
+        List<TeamUserListVO> teamUserListVOS = BeanCopyUtils.copyBeanList(teams, TeamUserListVO.class);
+        List<TeamUserListVO> teamList = teamUserListVOS.stream().filter(item -> {
+            for (Long teamId : teamIds) {
+                if (teamId.equals(item.getId())) {
+                    return false;
+                }
+            }
+            return true;
+        }).collect(Collectors.toList());
+        return new PageVO(teamList, (long) teamList.size());
     }
 
     /**

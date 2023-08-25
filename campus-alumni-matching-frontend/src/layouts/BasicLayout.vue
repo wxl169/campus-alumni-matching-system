@@ -1,11 +1,11 @@
 <template>
-  <van-nav-bar :title="title" left-arrow @click-left="onClickLeft" @click-right="onClickRight" fixed="true"  
-      v-if="route.meta.showHeader" 
-      :left-arrow="route.meta.showBack"
-      >
-    <!-- <template #right>
-      <van-icon name="search" size="18" />
-    </template> -->
+  <van-nav-bar :title="title"  fixed="true"  v-if="route.meta.showHeader">
+    <template #left v-if="route.meta.showBack">
+      <van-icon name="arrow-left" size="18"  @click="onClickLeft" />
+    </template>
+    <template #right v-if="route.meta.showRight">
+      <van-icon name="search" size="18"  @click="onClickRight"/>
+    </template>
   </van-nav-bar>
 
 
@@ -16,9 +16,9 @@
 
   <!-- v-model="active" @change="onChange" -->
   <van-tabbar v-if="route.meta.showBottom" route>
-    <van-tabbar-item icon="records" name="index" replace to="/">计划</van-tabbar-item>
+    <van-tabbar-item icon="wap-home-o" name="index" replace to="/">主页</van-tabbar-item>
+    <van-tabbar-item icon="smile-comment-o" name="team" replace to="" badge="99+">消息</van-tabbar-item>
     <van-tabbar-item icon="friends-o" name="user" replace to="/userTeam">通讯录</van-tabbar-item>
-    <van-tabbar-item icon="search" name="team" replace to="">发现</van-tabbar-item>
     <van-tabbar-item icon="user-o" name="user" replace to="/user/home">我</van-tabbar-item>
   </van-tabbar>
 </template>

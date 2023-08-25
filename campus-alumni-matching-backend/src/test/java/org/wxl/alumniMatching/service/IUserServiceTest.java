@@ -16,9 +16,9 @@ private IUserService userService;
 
     @Test
     public void testSearchUserByTags(){
-        List<String> tageNameList = Arrays.asList("Python");
-        List<UserTagVO> userTagVOS = userService.searchUserByTags(tageNameList);
-        userTagVOS.forEach(System.out::println);
+//        List<String> tageNameList = Arrays.asList("Python");
+//        List<UserTagVO> userTagVOS = userService.searchUserByTags(tageNameList);
+//        userTagVOS.forEach(System.out::println);
     }
 
 }

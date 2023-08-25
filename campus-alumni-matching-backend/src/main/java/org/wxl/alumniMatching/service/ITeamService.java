@@ -79,15 +79,13 @@ public interface ITeamService extends IService<Team> {
     boolean quitTeam(Long teamId, User loginUser);
 
     /**
-     * 分页获取队伍信息
+     * 分页获取队伍信息、但不包括已加入队伍的信息
      *
-     * @param pageNum 页码
-     * @param pageSize 每页数量
      * @param teamListDTO 查询条件
      * @param loginUser 当前登录信息
      * @return 获取的分页队伍数据
      */
-    PageVO teamList(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser);
+    PageVO teamList(TeamListDTO teamListDTO, User loginUser);
 
 
     /**

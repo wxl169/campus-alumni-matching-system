@@ -39,7 +39,9 @@ import {
   Space,
   Dialog, 
   RadioGroup, 
-  Radio
+  Radio,
+  FloatingBubble
+
 } from "vant";
 import "vant/es/toast/style";
 import * as VueRouter from "vue-router";
@@ -84,6 +86,8 @@ app.use(Space);
 app.use(Dialog);
 app.use(Radio);
 app.use(RadioGroup);
+app.use(FloatingBubble);
+
 
 const router = VueRouter.createRouter({
   // 4. 内部提供了 history 模式的实现。为了简单起见，我们在这里使用 hash 模式。

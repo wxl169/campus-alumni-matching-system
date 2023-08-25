@@ -17,7 +17,7 @@
             <van-cell center title="群公告" value="" size="large" :label="description" />
             <van-cell title="我在群里的昵称" :value="username" size="large" />
             <van-space direction="vertical" fill style="margin-top: 20px;">
-                <van-cell title="修改队伍信息" is-link :to="`/team/update/${teamId}`" v-if="leaderId === currentUser?.id"/>
+                <van-cell title="修改队伍信息" is-link  v-if="leaderId === currentUser?.id" @click="toUpdateTeam(teamId)"/>
                 <van-cell title="解散队伍"  is-link  @click="doDeleteTeam(teamId)" v-if="leaderId === currentUser?.id"/>
                 <van-button type="danger" size="large" @click="doQuitTeam(teamId)">退出队伍</van-button>
             </van-space>
@@ -34,7 +34,6 @@ import myAxios from "../../plugins/myAxios";
 import { showFailToast } from 'vant';
 import { showConfirmDialog } from 'vant';
 
-
 const router = useRouter()
 const route = useRoute()
 
@@ -43,16 +42,15 @@ const teamName = ref("");
 const description = ref("");
 const username = ref("");
 const leaderId = ref("")
-
+let teamId = ref(0)
 // 当前用户信息
 const currentUser = ref(null);
 const teamAndUser = ref(null);
-const teamId = route.params.id;
 const userList = ref([]);
 
 
-
 onMounted(async () => {
+    teamId = route.query.teamId;
     currentUser.value = await getCurrentUser();
     teamAndUser.value = await getTeamById(teamId);
     teamName.value = teamAndUser.value.teamName;
@@ -118,6 +116,19 @@ const doDeleteTeam = async (teamId: number) => {
             // on cancel
         });
 }
+
+/**
+ * 前往修改队伍信息界面
+ */
+ const toUpdateTeam = (teamId:number) =>{
+  router.push({
+    path:'/team/update',
+    query:{
+        teamId
+    }
+  });
+};
+
 </script>
     
     

@@ -13,4 +13,8 @@
         <result column="is_delete" property="isDelete" />
     </resultMap>
 
+    <select id="getJoinTeamId" resultType="java.lang.Long" parameterType="java.lang.Long">
+            select team_id from tb_user_team where user_id = #{userId} and is_delete = 0;
+    </select>
+
 </mapper>

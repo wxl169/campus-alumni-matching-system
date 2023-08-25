@@ -6,7 +6,7 @@
                     :rules="[{ required: true, message: '请输入队伍名' }]" maxlength="15" />
                 <van-field name="uploader" label="头像">
                     <template #input>
-                        <van-uploader :after-read="afterRead" v-model="fileList" multiple :max-count="2"/>
+                        <van-uploader :after-read="afterRead" v-model="fileList" multiple :max-count="1"/>
                     </template>
                 </van-field>
                 <van-field v-model="addTeamData.description" rows="2" autosize label="队伍描述" type="textarea"
@@ -84,7 +84,7 @@ const onSubmit = async () => {
     if (res?.code === 0) {
         showSuccessToast('添加成功');
         router.push({
-            path: '/team',
+            path: '/userTeam',
             replace: true,
         });
     } else {

@@ -38,5 +38,4 @@ const props = withDefaults(defineProps<UserCardListProps>(),{
     loading : true,
     userList:[] as UserType[],
 });
-
 </script>

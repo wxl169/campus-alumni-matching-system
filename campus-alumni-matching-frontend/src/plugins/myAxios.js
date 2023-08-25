@@ -21,7 +21,7 @@ myAxios.interceptors.response.use(function (response) {
     // 对响应数据做点什么
     if (response?.data?.code === 40010) {
       const redirectUrl = window.location.href;
-      window.location.href = `/user/login?redirect=${redirectUrl}`;
+      window.location.href = `/home?redirect=${redirectUrl}`;
   }
 
     return response.data;

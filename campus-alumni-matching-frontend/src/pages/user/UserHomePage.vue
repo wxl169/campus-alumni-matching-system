@@ -2,7 +2,7 @@
     <template v-if="user">
         <!-- 用户基本信息 -->
         <van-cell is-link :label="user.profile || '暂无个人简介'" :title="user.username || user.userAccount"
-            :to=" `/user/${user.id}`"  center>
+              center  to="/user">
             <template #icon>
                 <van-image :src="user.avatarUrl" fit="cover" height="80px" round style="margin-right: 10px"
                     width="80px" />
@@ -12,9 +12,6 @@
         <!-- 用户标签 -->
         <van-cell-group :border="false" title="我的标签">
             <van-space :size="5" style="padding: 0 16px" wrap>
-                <van-tag v-if="user.gender !== 0" :color="user.gender === 1 ? '#3bb' : '#f99'" plain size="large">
-                    {{ user.gender === 1 ? '男' : '女' }}
-                </van-tag>
                 <van-tag v-for="tag in user.tags" plain size="large" type="primary">
                     {{ tag }}
                 </van-tag>
@@ -34,6 +31,7 @@
 import { onMounted, ref } from 'vue';
 import { getCurrentUser } from "../../services/user";
 
+
 const user = ref();
 onMounted(async () => {
     user.value = await getCurrentUser();
@@ -41,6 +39,4 @@ onMounted(async () => {
         user.value.tags = JSON.parse(user.value.tags);
     }
 })
-
-
 </script>

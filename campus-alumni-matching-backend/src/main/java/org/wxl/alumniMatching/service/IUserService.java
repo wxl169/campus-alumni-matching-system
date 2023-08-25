@@ -77,18 +77,20 @@ public interface IUserService extends IService<User> {
 
     /**
      * 返回所有用户
-     *
+     * @param pageNum 页面
+     * @param pageSize 每页数据量
      * @return 所有用户信息列表
      */
-    List<UserTagVO> searchUserList();
+    PageVO searchUserList(Integer pageNum,Integer pageSize);
 
     /**
      * 根据标签搜索用户
-     *
+     * @param pageNum 页面
+     * @param pageSize 每页数据量
      * @param tagNameList 用户要拥有的标签
      * @return 拥有查询标签的用户信息列表
      */
-    List<UserTagVO> searchUserByTags(List<String> tagNameList);
+    PageVO searchUserByTags(Integer pageNum,Integer pageSize,List<String> tagNameList);
 
 
     /**

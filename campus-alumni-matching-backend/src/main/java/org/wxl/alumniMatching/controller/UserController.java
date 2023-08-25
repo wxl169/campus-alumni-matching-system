@@ -150,23 +150,25 @@ public class UserController {
 
     /**
      * 查询符合标签的用户
-     *
+     * @param pageNum 页面
+     * @param pageSize 每页数据量
      * @param tagNameList 标签列表
      * @return
      */
     @ApiOperation(value = "查询符合标签的用户")
     @GetMapping("/search/tags")
-    public BaseResponse<List<UserTagVO>> searchUsersByTags(
+    public BaseResponse<PageVO> searchUsersByTags(
             @ApiParam(value = "标签列表",required = false)
+            Integer pageNum,Integer pageSize,
             @RequestParam(required = false) List<String> tagNameList
     ){
-        List<UserTagVO> userTagVOS = null;
+        PageVO pageVO = null;
         if (CollectionUtils.isEmpty(tagNameList)){
-            userTagVOS = userService.searchUserList();
+            pageVO = userService.searchUserList(pageNum,pageSize);
         }else {
-            userTagVOS = userService.searchUserByTags(tagNameList);
+            pageVO = userService.searchUserByTags(pageNum,pageSize,tagNameList);
         }
-        return ResultUtils.success(userTagVOS);
+        return ResultUtils.success(pageVO);
     }
 
     /**

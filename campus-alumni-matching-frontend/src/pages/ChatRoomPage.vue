@@ -18,18 +18,10 @@
                     style="margin-right: 10px"
                     @click="onClickRight(teamId)"
                 />
-                <!-- <van-icon
-                    v-show="receiveType === '1'"
-                    name="ellipsis"
-                    size="22"
-                    style="margin-right: 10px"
-                    @click="onClickRight"
-                /> -->
             </div>
         </div>
 
         <div class="content_box" id="box" ref="scrollBox">
-            <!--            <div class="timer">2022-08-02 11:08:07</div>-->
             <div :class="item.position === 'left' ? 'userbox2' : 'userbox'"
                  v-for="(item, index) in chatList"
                  :key="index"
@@ -90,9 +82,14 @@ const scrollerHeight = computed(() => {
 const onClickLeft = () => {
     router.back();
 }
+
+
 const onClickRight = (teamId) =>{
   router.push({
-    path:'/team/detail/'+teamId
+    path:'/team/detail',
+    query:{
+        teamId
+    }
   });
 };
 

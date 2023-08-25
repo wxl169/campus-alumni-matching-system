@@ -53,7 +53,7 @@ const doLogout = async () => {
         .then(async () => {
             const res = await myAxios.post("/user/logout");
             if (res?.code === 0) {
-               router.push('/user/login')
+               router.push('/home')
             } else {
                 if (res.description == "") {
                     showFailToast("退出失败!");
