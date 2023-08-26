@@ -32,4 +32,15 @@
         from tb_team t left join tb_user_team ut on t.id = ut.team_id WHERE ut.user_id = #{userId} and t.is_delete = 0 and ut.is_delete = 0;
     </select>
 
+    <select id="selectMatchTeams" resultType="java.lang.Long">
+        select id from tb_team as t
+                  where max_num >= 2
+                    AND
+                        max_num > (select count(team_id) FROM tb_user_team  where team_id = t.id)
+                    and
+                      `status` != 1 and (ISNULL(expire_time) or expire_time > SYSDATE())
+                      and
+                      is_delete = 0;
+    </select>
+
 </mapper>

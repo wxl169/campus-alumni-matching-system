@@ -16,5 +16,14 @@
     <select id="getJoinTeamId" resultType="java.lang.Long" parameterType="java.lang.Long">
             select team_id from tb_user_team where user_id = #{userId} and is_delete = 0;
     </select>
+    <select id="getUserTags" resultType="java.lang.String">
+        SELECT u.tags FROM tb_user as u
+                      where
+                          is_delete = 0
+                        and
+                          u.tags is not null
+                        and
+                          u.id IN (select user_id from tb_user_team where team_id = #{teamId});
+    </select>
 
 </mapper>

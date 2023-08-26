@@ -14,5 +14,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface UserMapper extends BaseMapper<User> {
 
+    /**
+     * 修改用户信息
+     * @param userUpdateDTO 用户信息
+     * @return 返回队伍主键
+     */
     int updateByUserUpdateDTO(UserUpdateDTO userUpdateDTO);
 }

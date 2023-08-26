@@ -16,10 +16,18 @@
       <van-radio name="1">女</van-radio>
     </van-radio-group>
 
-    <van-cell-group inset v-if="editUser.editName != '头像' && editUser.editName != '性别'">
+
+    <van-cell-group inset v-if="editUser.editName === '个人简介'">
+      <van-field v-model="editUser.currentValue" rows="2" autosize label="个人简介" type="textarea" maxlength="50" placeholder="请输入个人简介"
+        show-word-limit />
+    </van-cell-group>
+
+    <van-cell-group inset v-if="editUser.editName != '头像' && editUser.editName != '性别' && editUser.editName != '个人简介'">
       <van-field v-model="editUser.currentValue" :name="editUser.editKey" :label="editUser.editName"
         :placeholder="`请输入${editUser.editName}`" />
     </van-cell-group>
+
+
     <div style="margin: 16px;">
       <van-button round block type="primary" native-type="submit">
         提交
@@ -42,6 +50,7 @@ const editUser = ref({
   currentValue: route.query.currentValue,
   editName: route.query.editName,
 })
+
 let checked = ref(editUser.value.currentValue);
 
 
@@ -53,7 +62,9 @@ const onSubmit = async () => {
     showFailToast('用户未登录');
     return;
   }
-  editUser.value.currentValue = checked;
+  if (editUser.value.editName === '性别') {
+    editUser.value.currentValue = checked;
+  }
   const res = await myAxios.put('/user/updateUser', {
     'id': currentUser.id,
     [editUser.value.editKey as string]: editUser.value.currentValue,

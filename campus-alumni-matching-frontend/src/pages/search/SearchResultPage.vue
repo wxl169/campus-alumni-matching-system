@@ -1,6 +1,6 @@
 <template>
  <user-card-list :user-list="userList" :loading="loading_user"/>
-
+<van-empty v-if="userList?.length < 1" description="数据为空"/>
 <!-- <van-empty description="描述文字" /> -->
 
 

@@ -19,4 +19,11 @@ public interface UserTeamMapper extends BaseMapper<UserTeam> {
      * @return 返回已加入队伍的id集合
      */
     List<Long> getJoinTeamId(Long userId);
+
+    /**
+     * 将参与该队伍的成员的标签信息选出出现次数最多的标签
+     * @param teamId 队伍id
+     * @return 返回去重后的标签信息
+     */
+    List<String> getUserTags(Long teamId);
 }

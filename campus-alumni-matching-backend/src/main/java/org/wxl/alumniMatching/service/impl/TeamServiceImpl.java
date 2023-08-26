@@ -2,6 +2,9 @@ package org.wxl.alumniMatching.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import javafx.util.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
@@ -26,18 +29,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.wxl.alumniMatching.service.IUserService;
 import org.wxl.alumniMatching.service.IUserTeamService;
+import org.wxl.alumniMatching.utils.AlgorithmUtils;
 import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * <p>
@@ -498,6 +500,86 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         List<UserShowVO> userList = teamMapper.getUserList(teamId);
         teamUserListVO.setUserList(userList);
         return teamUserListVO;
+    }
+
+    /**
+     * 获取最匹配的队伍信息
+     * <p> 思路：查询出自己的标签信息，然后查出该队伍所有成员的标签信息，选出出现次数最多的标签，然后根据编辑距离算法找出合适的队伍
+     *
+     * @param pageNum 当前页码
+     * @param pageSize 每页多少条数据
+     * @param loginUser 当前登录用户信息
+     * @return 返回最匹配用户的列表信息
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public PageVO getMatchTeams(Integer pageNum, Integer pageSize, User loginUser) {
+        //如果没有标签，则返回null
+        if (loginUser.getTags() == null){
+            return null;
+        }
+        if (pageNum == null){
+            pageNum = 1;
+        }
+        if (pageSize == null){
+            pageSize = 10;
+        }
+        //获取自己的标签信息
+        String tags = loginUser.getTags();
+        Gson gson = new Gson();
+        List<String> tagList = gson.fromJson(tags,new TypeToken<List<String>>(){}.getType());
+
+        //只查找队伍的主键，最大队伍人数要大于2，队伍要没有满员，队伍状态不能是私密的，队伍没有过期
+        List<Long> teamIds = teamMapper.selectMatchTeams();
+
+        //用户列表的下标 =》 相似度
+        List<Pair<Long,Long>> list = new ArrayList<>();
+
+        List<String> tagListSort;
+        for (Long teamId: teamIds) {
+            //限制展示用户的list长度
+            if (list.size() >= (pageSize * 5)){
+                break;
+            }
+            //将要计算的标签集合
+            tagListSort = new ArrayList<>();
+            Map<String, Integer> userTags = userTeamService.getUserTags(teamId);
+            //筛选出出现次数大于1的标签
+            for (Map.Entry<String, Integer> entry : userTags.entrySet()) {
+                if (entry.getValue() >= 1) {
+                    tagListSort.add(entry.getKey());
+                }
+            }
+            //如果标签数小于1 则排除当前队伍
+            if (tagListSort.size() < 1){
+                continue;
+            }
+            long distance = AlgorithmUtils.minDistance(tagList, tagListSort);
+            list.add(new Pair<>(teamId, distance));
+        }
+
+        //按编辑距离从小到大排序
+        List<Pair<Long,Long>> topTeamPairList = list.stream().
+                sorted((a,b) -> (int)(a.getValue() - b.getValue()))
+                //分页
+                .skip((long) (pageNum - 1) * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
+
+        // 原本顺序的 teamId 列表
+        List<Long> teamIdList = topTeamPairList.stream().map(Pair::getKey).collect(Collectors.toList());
+
+        LambdaQueryWrapper<Team> teamQueryWrapper = new LambdaQueryWrapper<>();
+        teamQueryWrapper.in(Team::getId,teamIdList);
+        Map<Long, List<TeamUserListVO>> teamIdUserListMap = this.list(teamQueryWrapper)
+                .stream()
+                .map(team -> BeanCopyUtils.copyBean(team,TeamUserListVO.class))
+                .collect(Collectors.groupingBy(TeamUserListVO::getId));
+        List<TeamUserListVO> finalTeamList = new ArrayList<>();
+        for (Long teamId : teamIdList) {
+            finalTeamList.add(teamIdUserListMap.get(teamId).get(0));
+        }
+        return new PageVO(finalTeamList, (long) list.size());
     }
 
 

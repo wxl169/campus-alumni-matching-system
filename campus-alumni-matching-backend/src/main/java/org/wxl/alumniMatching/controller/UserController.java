@@ -42,7 +42,7 @@ public class UserController {
      */
     @ApiOperation(value = "用户注册")
     @PostMapping("/register")
-    public BaseResponse<Long> userRegister(@RequestBody UserRegisterDTO userRegisterDto) {
+    public BaseResponse userRegister(@RequestBody UserRegisterDTO userRegisterDto) {
         // 校验
         if (userRegisterDto == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数为空");
@@ -55,7 +55,10 @@ public class UserController {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数为空");
         }
         long result = userService.userRegister(userAccount, userPassword, checkPassword);
-        return ResultUtils.success(result);
+        if (result > 0){
+           return ResultUtils.success(true);
+        }
+        return ResultUtils.error(ErrorCode.SYSTEM_ERROR,"登录失败");
     }
 
     /**
@@ -160,7 +163,7 @@ public class UserController {
     public BaseResponse<PageVO> searchUsersByTags(
             @ApiParam(value = "标签列表",required = false)
             Integer pageNum,Integer pageSize,
-            @RequestParam(required = false) List<String> tagNameList
+           @RequestParam(required = false) List<String> tagNameList
     ){
         PageVO pageVO = null;
         if (CollectionUtils.isEmpty(tagNameList)){
@@ -197,6 +200,8 @@ public class UserController {
         return  ResultUtils.success(updateUser);
     }
 
+
+
     /**
      * 主页推荐用户信息列表
      *
@@ -222,10 +227,15 @@ public class UserController {
      * @param request 当前登录用户信息
      * @return 返回最匹配用户的列表信息
      */
+    @ApiOperation(value = "获取最匹配的用户信息")
     @GetMapping("/match")
-    public BaseResponse<PageVO> matchUsers(Integer pageNum,Integer pageSize, HttpServletRequest request) {
+    public BaseResponse matchUsers(Integer pageNum,Integer pageSize, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
-        return ResultUtils.success(userService.getMatchUsers(pageNum,pageSize,loginUser));
+        PageVO matchUsers = userService.getMatchUsers(pageNum, pageSize, loginUser);
+        if (loginUser.getTags()  == null || matchUsers == null){
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配用户");
+        }
+        return ResultUtils.success(matchUsers);
     }
 
 

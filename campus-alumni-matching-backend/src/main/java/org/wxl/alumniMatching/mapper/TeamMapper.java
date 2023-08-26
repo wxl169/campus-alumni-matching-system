@@ -31,4 +31,11 @@ public interface TeamMapper extends BaseMapper<Team> {
      * @return  获取当前用户加入的队伍信息
      */
     List<Team> getUserJoinTeamList(Long userId);
+
+    /**
+     * 获取队伍信息
+     * 只查找队伍的主键，最大队伍人数要大于2，队伍要没有满员，队伍状态不能是私密的，队伍没有过期
+     * @return 队伍主键
+     */
+    List<Long> selectMatchTeams();
 }

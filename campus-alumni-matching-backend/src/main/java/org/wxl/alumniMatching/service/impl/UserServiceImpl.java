@@ -1,8 +1,6 @@
 package org.wxl.alumniMatching.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -11,7 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
-import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.contant.UserConstant;
 import org.wxl.alumniMatching.domain.dto.UserListDTO;
@@ -30,6 +27,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -101,8 +99,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
         // 3. 插入数据
         User user = new User();
+        user.setUsername("用户"+ userAccount);
         user.setUserAccount(userAccount);
+        user.setGender(0);
+        user.setAvatarUrl(UserConstant.USER_DEFAULT_AVATAR);
         user.setUserPassword(encryptPassword);
+        String jsonString = "[\"男\"]";
+        user.setTags(jsonString);
         boolean saveResult = this.save(user);
         if (!saveResult) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"注册失败");
@@ -349,14 +352,52 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (oldUser == null){
             throw new BusinessException(ErrorCode.NULL_ERROR,"暂无该用户");
         }
-        //用户密码控制在 8 ~ 15 位
-        if (StringUtils.isNotBlank(userUpdateDTO.getUserPassword()) && (userUpdateDTO.getUserPassword().length() < UserConstant.USER_PASSWORD_MIN_LENGTH || userUpdateDTO.getUserPassword().length() > UserConstant.USER_PASSWORD_MAX_LENGTH)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码长度不满要求");
+
+        //检验用户信息是否符合要求
+        isInspectUserInformation(BeanCopyUtils.copyBean(userUpdateDTO,User.class));
+
+        if (Objects.equals(userUpdateDTO.getProfile(), "")){
+            userUpdateDTO.setProfile(" ");
         }
         //如果没有图片则设置默认图片
         if(StringUtils.isBlank(oldUser.getAvatarUrl())  && StringUtils.isBlank(userUpdateDTO.getAvatarUrl()) ){
             userUpdateDTO.setAvatarUrl(UserConstant.USER_DEFAULT_AVATAR);
         }
+
+        //修改性别后，将性别添加在标签里
+        if(userUpdateDTO.getGender() != null){
+            String genderTag;
+            if (userUpdateDTO.getGender() == 1){
+                genderTag = "女";
+            } else {
+                genderTag = "男";
+            }
+            //修改标签
+            String tags = oldUser.getTags();
+            Integer gender = oldUser.getGender();
+            String oldGenderTag = "男";
+            if (gender != null && gender == 1){
+                oldGenderTag = "女";
+            }
+            Gson gson = new Gson();
+            List<String> tagList = gson.fromJson(tags,new TypeToken<List<String>>(){}.getType());
+            AtomicBoolean isExist = new AtomicBoolean(false);
+            String finalOldGenderTag = oldGenderTag;
+            List<String> collect = tagList.stream().map(team -> {
+                if (team.equals(finalOldGenderTag)) {
+                    isExist.set(true);
+                    team = genderTag;
+                }
+                return team;
+            }).collect(Collectors.toList());
+            if(!isExist.get()){
+                collect.add(genderTag);
+            }
+            String tag = gson.toJson(collect);
+            userUpdateDTO.setTags(tag);
+
+        }
+
         return userMapper.updateByUserUpdateDTO(userUpdateDTO);
     }
 
@@ -397,6 +438,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     /**
      * 获取最匹配的用户
+     * <p> 思路：将自己的标签与其他用户的标签用编辑距离算法计算匹配度
+     *
      * @param pageNum 当前页码
      * @param pageSize 每页多少条数据
      * @param loginUser 当前登录用户信息
@@ -404,25 +447,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     @Override
     public PageVO getMatchUsers(Integer pageNum, Integer pageSize, User loginUser) {
+        //如果没有标签，则返回null
+        if (loginUser.getTags() == null){
+            return  null;
+        }
         if (pageNum == null){
             pageNum = 1;
         }
         if (pageSize == null){
             pageSize = 10;
         }
+        //查询所有用户且不会空的标签
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.select(User::getId,User::getTags)
                 .isNotNull(User::getTags);
         List<User> userList = this.list(queryWrapper);
+
+        //自己的标签
         String tags = loginUser.getTags();
         Gson gson = new Gson();
         List<String> tagList = gson.fromJson(tags,new TypeToken<List<String>>(){}.getType());
+
         //用户列表的下标 =》 相似度
         List<Pair<User,Long>> list = new ArrayList<>();
         //依次计算所有用户和当前用户的相似度
         for (User user : userList) {
-            //限制list长度
-            if (list.size() >= 5){
+            //限制展示用户的list长度
+            if (list.size() >= (pageSize * 5)){
                  break;
             }
             String userTags = user.getTags();
@@ -445,7 +496,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .collect(Collectors.toList());
         // 原本顺序的 userId 列表
         List<Long> userIdList = topUserPairList.stream().map(pair -> pair.getKey().getId()).collect(Collectors.toList());
-       LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
        userQueryWrapper.in(User::getId,userIdList);
         // 1, 3, 2
         // User1、User2、User3
@@ -501,4 +552,45 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         return user;
     }
+
+
+    /**
+     * 检验用户信息是否符合要求
+     * @param user 用户信息
+     */
+    private void isInspectUserInformation(User user){
+        //用户名控制在1 ~ 10 位
+        if (StringUtils.isNotBlank(user.getUsername())) {
+            int length = user.getUsername().length();
+            if (length < UserConstant.USER_NAME_MIN_LENGTH || length > UserConstant.USER_NAME_MAX_LENGTH){
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名请控制在1~10位");
+            }
+
+        }
+        //用户密码控制在 8 ~ 15 位
+        if (StringUtils.isNotBlank(user.getUserPassword())) {
+            int length = user.getUserPassword().length();
+            if (length < UserConstant.USER_PASSWORD_MIN_LENGTH || length > UserConstant.USER_PASSWORD_MAX_LENGTH){
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码请控制在8~15位");
+            }
+        }
+
+        //用户账号控制在5 ~ 10 位
+        if (StringUtils.isNotBlank(user.getUserAccount())) {
+            int length = user.getUserAccount().length();
+            if (length < UserConstant.USER_ACCOUNT_MIN_LENGTH || length > UserConstant.USER_ACCOUNT_MAX_LENGTH){
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号请控制在5~10位");
+            }
+        }
+
+        //个人简介请控制在0 ~ 50 位
+        if (StringUtils.isNotBlank(user.getProfile())) {
+            int length = user.getProfile().length();
+            if (length > UserConstant.USER_PROFILE_MAX_LENGTH){
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "个人简介请控制在0~50位");
+            }
+        }
+
+    }
+
 }

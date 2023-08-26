@@ -50,11 +50,30 @@ public interface UserConstant {
      * 用户密码最大长度
      */
     int USER_PASSWORD_MAX_LENGTH = 15;
+
+    /**
+     * 用户名最小长度
+     */
+    int USER_NAME_MIN_LENGTH = 1;
+    /**
+     * 用户密码最大长度
+     */
+    int USER_NAME_MAX_LENGTH = 10;
+
     /**
      * 账号存在空格
      */
     String USER_ACCOUNT_EXIT_SPACE = " ";
 
-    String USER_DEFAULT_AVATAR = "http://rzhrvkdnh.bkt.clouddn.com/2023/08/17/e4fd75551fed4062b1959de9c5f4703b.jpg";
+    /**
+     * 个人简介最大长度
+     */
+    int USER_PROFILE_MAX_LENGTH = 50;
+
+
+    /**
+     * 用户默认头像
+     */
+    String USER_DEFAULT_AVATAR = "https://avatars.githubusercontent.com/u/110905530?s=400&u=93c77349f78d6dc20c3ca8c4e6e758c0d7767108&v=4";
 
 }

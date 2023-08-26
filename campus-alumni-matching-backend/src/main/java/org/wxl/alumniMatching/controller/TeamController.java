@@ -206,6 +206,25 @@ public class TeamController {
 
 
     /**
+     * 获取最匹配的队伍信息
+     * @param pageNum 当前页码
+     * @param pageSize 每页多少条数据
+     * @param request 当前登录用户信息
+     * @return 返回最匹配用户的列表信息
+     */
+    @ApiOperation(value = "获取最匹配的队伍信息")
+    @GetMapping("/match")
+    public BaseResponse matchTeam(Integer pageNum,Integer pageSize, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        PageVO matchTeams = teamService.getMatchTeams(pageNum, pageSize, loginUser);
+        if (loginUser.getTags()  == null || matchTeams == null){
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配的队伍");
+        }
+        return ResultUtils.success(matchTeams);
+    }
+
+
+    /**
      * 判断teamId是否符合要求
      * @param teamId 队伍id
      */

@@ -24,7 +24,7 @@
   import UserCardList from '../components/UserCardList.vue';
   import TeamCardList from '../components/TeamCardList.vue';
   import {UserType} from "../models/user";
-  
+  import { showLoadingToast } from 'vant';
 
 /**
  * 推荐栏
@@ -35,10 +35,8 @@ const userList = ref([]);
 const loading_user = ref(true);
 const loading_team = ref(true);
 const teamList = ref([]);
-  
-/**
- * 加载用户数据
- */
+
+
 const loadData_user = async () => {
   let userListData;
   loading_user.value = true;
@@ -76,7 +74,7 @@ const loadData_team = async () => {
   // 心动模式，根据标签匹配用户
     const pageNum = 1;
     const pageSize = 10;
-    teamListData = await myAxios.get('/team/list/page', {
+    teamListData = await myAxios.get('/team/match', {
       params: {
         pageNum,
         pageSize,

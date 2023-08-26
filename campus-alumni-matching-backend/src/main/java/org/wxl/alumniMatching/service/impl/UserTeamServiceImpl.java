@@ -1,6 +1,8 @@
 package org.wxl.alumniMatching.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.domain.entity.UserTeam;
 import org.wxl.alumniMatching.exception.BusinessException;
@@ -10,7 +12,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -51,5 +54,27 @@ private UserTeamMapper userTeamMapper;
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
         }
         return userTeamMapper.getJoinTeamId(userId);
+    }
+
+    /**
+     * 将参与该队伍的成员的标签信息选出出现次数最多的标签
+     * @param teamId 队伍id
+     * @return 返回去重后的标签信息
+     */
+    @Override
+    public Map<String, Integer> getUserTags(Long teamId) {
+        //获取参与该队伍的所有成员的标签
+        List<String> tags = userTeamMapper.getUserTags(teamId);
+        Gson gson = new Gson();
+        Map<String, Integer> map = new HashMap<>(32);
+
+        //按出现次数排列
+        tags.forEach(tag->{
+            List<String> tagList = gson.fromJson(tag, new TypeToken<List<String>>() {}.getType());
+            tagList.forEach(tagSort->{
+                map.put(tagSort,map.getOrDefault(tagSort,0)+1);
+            });
+        });
+        return map;
     }
 }
