@@ -33,14 +33,19 @@
     </select>
 
     <select id="selectMatchTeams" resultType="java.lang.Long">
-        select id from tb_team as t
-                  where max_num >= 2
-                    AND
-                        max_num > (select count(team_id) FROM tb_user_team  where team_id = t.id)
-                    and
-                      `status` != 1 and (ISNULL(expire_time) or expire_time > SYSDATE())
+            select id from tb_team as t
+            where max_num >= 2
+              AND
+                    max_num > (select count(team_id) FROM tb_user_team  where team_id = t.id)
+              and
+                `status` != 1 and (ISNULL(expire_time) or expire_time > SYSDATE())
                       and
-                      is_delete = 0;
+                      is_delete = 0
+                      and not EXISTS
+                      (select team_id from tb_user_team  as tu
+                                where
+                                user_id  = #{userId} and is_delete = 0 and t.id = tu.team_id);
     </select>
+
 
 </mapper>

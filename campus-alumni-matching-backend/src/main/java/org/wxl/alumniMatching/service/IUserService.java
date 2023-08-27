@@ -1,5 +1,6 @@
 package org.wxl.alumniMatching.service;
 
+import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.domain.dto.UserListDTO;
 import org.wxl.alumniMatching.domain.dto.UserUpdateDTO;
 import org.wxl.alumniMatching.domain.entity.User;
@@ -34,7 +35,7 @@ public interface IUserService extends IService<User> {
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request
+     * @param request 当前用户信息
      * @return 脱敏后的用户信息
      */
     UserLoginVO userLogin(String userAccount, String userPassword, HttpServletRequest request);
@@ -44,7 +45,7 @@ public interface IUserService extends IService<User> {
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request
+     * @param request 当前用户信息
      * @return 脱敏后的用户信息
      */
     UserLoginVO userAdminLogin(String userAccount, String userPassword, HttpServletRequest request);
@@ -52,8 +53,8 @@ public interface IUserService extends IService<User> {
     /**
      * 用户注销
      *
-     * @param request
-     * @return
+     * @param request 当前用户信息
+     * @return 是否退出成功
      */
     int userLogout(HttpServletRequest request);
 
@@ -124,20 +125,44 @@ public interface IUserService extends IService<User> {
     /**
      * 获取当前登录用户信息
      *
-     * @param request
-     * @return
+     * @param request 当前用户信息
+     * @return 用户信息
      */
     User getLoginUser(HttpServletRequest request);
 
     /**
      * 判断是否是管理员
      *
-     * @param request
-     * @return
+     * @param request 当前用户信息
+     * @return 是否为管理员
      */
     boolean isAdmin(HttpServletRequest request);
     boolean isAdmin(User loginUser);
 
 
+    /**
+     * 添加好友
+     *
+     * @param friendId 好友id
+     * @param user 当前登录用户信息
+     * @return 返回是否添加成功
+     */
+    boolean addFriend(Long friendId,User user);
 
+    /**
+     * 关注的好友信息
+     *
+     * @param user 当前登录用户信息
+     * @return 返回关注的好友列表
+     */
+    List<UserTagVO> getFriendList(User user);
+
+    /**
+     * 根据id获取用户信息
+     *
+     * @param userId 获取信息的用户id
+     * @param loginUser 获取当前信息
+     * @return 获取用户的信息
+     */
+    UserDetailVO getUserDetailById(Long userId, User loginUser);
 }

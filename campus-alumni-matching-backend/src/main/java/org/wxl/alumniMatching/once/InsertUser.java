@@ -31,7 +31,6 @@ public class InsertUser {
             user.setUserPassword("12345678");
             user.setPhone("18184051000");
             user.setEmail("1695600000@qq.com");
-            user.setSchool("重庆工程学院");
             user.setProfile("个人介绍"+i);
             user.setTags("[]");
             user.setUserStatus(0);

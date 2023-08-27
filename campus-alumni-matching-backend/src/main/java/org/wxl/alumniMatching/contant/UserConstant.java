@@ -76,4 +76,8 @@ public interface UserConstant {
      */
     String USER_DEFAULT_AVATAR = "https://avatars.githubusercontent.com/u/110905530?s=400&u=93c77349f78d6dc20c3ca8c4e6e758c0d7767108&v=4";
 
+    /**
+     * 判断账号是否含特殊符号的正则表达式
+     */
+    String USER_ACCOUNT_REGULAR = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
 }

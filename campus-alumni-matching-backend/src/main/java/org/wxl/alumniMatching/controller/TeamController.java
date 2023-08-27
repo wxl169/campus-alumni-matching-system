@@ -16,7 +16,6 @@ import org.wxl.alumniMatching.domain.vo.TeamUserListVO;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.ITeamService;
 import org.wxl.alumniMatching.service.IUserService;
-import org.wxl.alumniMatching.service.IUserTeamService;
 import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
@@ -36,8 +35,6 @@ public class TeamController {
     private ITeamService teamService;
     @Resource
     private IUserService userService;
-    @Resource
-    private  IUserTeamService userTeamService;
 
 
     /**
@@ -216,9 +213,12 @@ public class TeamController {
     @GetMapping("/match")
     public BaseResponse matchTeam(Integer pageNum,Integer pageSize, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
+        if (loginUser.getTags()  == null){
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配的队伍,请添加合适的标签");
+        }
         PageVO matchTeams = teamService.getMatchTeams(pageNum, pageSize, loginUser);
-        if (loginUser.getTags()  == null || matchTeams == null){
-            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配的队伍");
+        if (matchTeams == null) {
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配的队伍,请添加合适的标签");
         }
         return ResultUtils.success(matchTeams);
     }

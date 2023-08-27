@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -51,9 +53,6 @@ public class User implements Serializable {
     @ApiModelProperty(value = "邮箱")
     private String email;
 
-    @ApiModelProperty(value = "学校")
-    private String school;
-
     @ApiModelProperty(value = "个人简介")
     private String profile;
 
@@ -73,6 +72,9 @@ public class User implements Serializable {
 
     @ApiModelProperty(value = "标签列表")
     private String tags;
+
+    @ApiModelProperty(value = "好友列表")
+    private String friends;
 
     @ApiModelProperty(value = "是否删除")
     @TableLogic

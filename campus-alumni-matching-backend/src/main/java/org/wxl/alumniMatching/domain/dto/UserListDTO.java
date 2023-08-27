@@ -31,11 +31,6 @@ public class UserListDTO  implements Serializable {
     private Integer gender;
 
     /**
-     * 学校
-     */
-    private String school;
-
-    /**
      * 状态 0——正常
      */
     private Integer userStatus;

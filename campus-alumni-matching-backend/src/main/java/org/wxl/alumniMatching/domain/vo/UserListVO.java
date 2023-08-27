@@ -37,11 +37,6 @@ public class UserListVO implements Serializable {
      */
     private Integer gender;
 
-    /**
-     * 学校
-     */
-    private String school;
-
 
     /**
      * 状态 0——正常

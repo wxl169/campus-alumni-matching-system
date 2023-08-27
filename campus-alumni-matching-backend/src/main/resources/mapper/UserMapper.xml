@@ -23,9 +23,6 @@
             <if test="email != null and email != ''">
                 email = #{email},
             </if>
-            <if test="school != null and school != ''">
-                school = #{school},
-            </if>
             <if test="profile != null">
                 profile = #{profile},
             </if>
@@ -45,4 +42,16 @@
                 </if>
             </where>
     </update>
+
+    <select id="getMatchUsers" resultType="org.wxl.alumniMatching.domain.entity.User"
+            parameterType="java.lang.Long">
+        select id,tags from
+                           tb_user
+                       where
+                           user_status = 0
+                         and
+                           is_delete = 0
+                         and
+                           tags is not null and tags &lt;&gt; "" and tags &lt;&gt; "[]";
+    </select>
 </mapper>

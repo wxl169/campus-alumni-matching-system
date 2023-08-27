@@ -49,11 +49,6 @@ public class UserLoginVO implements Serializable {
     private String email;
 
     /**
-     * 学校
-     */
-    private String school;
-
-    /**
      * 个人简介
      */
     private String profile;

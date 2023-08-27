@@ -9,7 +9,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.JoinTeamListVO;
 import org.wxl.alumniMatching.domain.vo.PageVO;
-import org.wxl.alumniMatching.domain.vo.TeamByIdVO;
 import org.wxl.alumniMatching.domain.vo.TeamUserListVO;
 
 import java.util.List;

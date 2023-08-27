@@ -39,7 +39,6 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * <p>
@@ -327,6 +326,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         }
         // 该用户已加入的队伍数量
         long userId = loginUser.getId();
+
         // 只有一个线程能获取到锁
         RLock lock = redissonClient.getLock("alumniMatching:team:joinTeam:lock");
         try {
@@ -529,8 +529,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         Gson gson = new Gson();
         List<String> tagList = gson.fromJson(tags,new TypeToken<List<String>>(){}.getType());
 
-        //只查找队伍的主键，最大队伍人数要大于2，队伍要没有满员，队伍状态不能是私密的，队伍没有过期
-        List<Long> teamIds = teamMapper.selectMatchTeams();
+        //只查找队伍的主键，最大队伍人数要大于2，队伍要没有满员，队伍状态不能是私密的，队伍没有过期，且当前用户没有加入的队伍
+        List<Long> teamIds = teamMapper.selectMatchTeams(loginUser.getId());
 
         //用户列表的下标 =》 相似度
         List<Pair<Long,Long>> list = new ArrayList<>();

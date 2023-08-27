@@ -1,11 +1,14 @@
 package org.wxl.alumniMatching.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.DigestUtils;
@@ -46,6 +49,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private UserMapper userMapper;
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
+    @Resource
+    private RedissonClient redissonClient;
 
 
     /**
@@ -78,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码长度不满要求");
         }
         // 账户不能包含特殊字符
-        String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        String validPattern = UserConstant.USER_ACCOUNT_REGULAR;
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         //账号不能包含空格和特殊字符
         if (matcher.find() || userAccount.contains(UserConstant.USER_ACCOUNT_EXIT_SPACE)) {
@@ -118,7 +123,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request
+     * @param request 当前登录账号信息
      * @return 脱敏后的用户信息
      */
     @Override
@@ -134,7 +139,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"登录失败");
         }
         // 账户不能包含特殊字符
-        String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        String validPattern = UserConstant.USER_ACCOUNT_REGULAR;
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"登录失败");
@@ -153,7 +158,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         // 3. 用户脱敏
         UserLoginVO userLoginVo = BeanCopyUtils.copyBean(user, UserLoginVO.class);
-        // 4. 记录用户的登录态
+        // 4. 记录用户的登录态,将登录信息存入session
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, user);
         return userLoginVo;
     }
@@ -163,7 +168,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
-     * @param request
+     * @param request 获取当前登录用户信息
      * @return 脱敏后的用户信息
      */
     @Override
@@ -179,7 +184,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /**
      * 用户注销
      *
-     * @param request
+     * @param request 获取当前登录用户信息
      */
     @Override
     public int userLogout(HttpServletRequest request) {
@@ -191,8 +196,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /**
      * 获取当前用户
      *
-     * @param request
-     * @return
+     * @param request 获取当前登录用户信息
+     * @return 返回当前用户信息
      */
     @Override
     public UserCurrentVO getCurrentUser(HttpServletRequest request) {
@@ -232,7 +237,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         queryWrapper.like(!StringUtils.isEmpty(userListDto.getUsername()),User::getUsername,userListDto.getUsername())
                 .like(!StringUtils.isEmpty(userListDto.getUserAccount()),User::getUserAccount,userListDto.getUserAccount())
                 .eq(userListDto.getGender()!= null,User::getGender,userListDto.getGender())
-                .like(!StringUtils.isEmpty(userListDto.getSchool()),User::getSchool,userListDto.getSchool())
                 .eq(userListDto.getUserStatus() != null,User::getUserStatus,userListDto.getUserStatus())
                 .eq(userListDto.getUserRole() != null,User::getUserRole,userListDto.getUserRole());
 
@@ -457,15 +461,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (pageSize == null){
             pageSize = 10;
         }
-        //查询所有用户且不会空的标签
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.select(User::getId,User::getTags)
-                .isNotNull(User::getTags);
-        List<User> userList = this.list(queryWrapper);
-
+        //查询所有标签不为空，状态正常
+        List<User> userList = userMapper.getMatchUsers(loginUser.getId());
+        //将自己关注的用户排除
+        String friends = loginUser.getFriends();
+        Gson gson = new Gson();
+        List<Long> friendIdList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
+        if (friendIdList != null){
+            userList = userList.stream().filter(user -> {
+                for (Long userId : friendIdList) {
+                    if (user.getId().equals(userId)) {
+                        return false;
+                    }
+                }
+                return true;
+            }).collect(Collectors.toList());
+        }
         //自己的标签
         String tags = loginUser.getTags();
-        Gson gson = new Gson();
         List<String> tagList = gson.fromJson(tags,new TypeToken<List<String>>(){}.getType());
 
         //用户列表的下标 =》 相似度
@@ -513,12 +526,128 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     }
 
+    /**
+     * 添加好友
+     *
+     * @param friendId 好友id
+     * @param user 当前登录用户信息
+     * @return 返回是否添加成功
+     */
+    @Override
+    public boolean addFriend(Long friendId, User user) {
+        if (friendId == null || friendId <=0 || friendId.equals(user.getId()) ){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        // 只有一个线程能获取到锁
+        RLock lock = redissonClient.getLock("alumniMatching:user:addFriend:lock");
+        try {
+            while (true){
+                if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
+                    //获取用户的好友列表信息
+                    String friendJson = null;
+                    Gson gson = new Gson();
+                    if (StringUtils.isBlank(user.getFriends())){
+                        friendJson =  String.format("[%d]", friendId);
+                    }else{
+                        String friends = user.getFriends();
+                        List<Long> friendList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
+                        //判断当前好友id是否在好友列表中
+                        boolean judge = false;
+                        for (Long friend: friendList) {
+                            if (friend.equals(friendId)){
+                                judge = true;
+                                break;
+                            }
+                        }
+                        if (judge){
+                            throw new BusinessException(ErrorCode.PARAMS_ERROR,"已添加该好友，请勿重复添加");
+                        }
+                        friendList.add(friendId);
+                        friendJson = gson.toJson(friendList);
+                    }
+                    LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+                    updateWrapper.eq(User::getId,user.getId());
+                    updateWrapper.set(User::getFriends,friendJson);
+                    return this.update(updateWrapper);
+                }
+            }
+        } catch (InterruptedException e) {
+            log.error("doCacheRecommendUser error", e);
+            return false;
+        }finally {
+            // 只能释放自己的锁
+            if (lock.isHeldByCurrentThread()) {
+                System.out.println("unLock: " + Thread.currentThread().getId());
+                lock.unlock();
+            }
+        }
+    }
+
+    /**
+     * 关注的好友信息
+     *
+     * @param user 用户信息
+     * @return 返回关注的好友列表
+     */
+    @Override
+    public List<UserTagVO> getFriendList(User user) {
+        System.out.println("当前登录信息:" + user);
+        if (user == null){
+            throw  new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        String userFriends = user.getFriends();
+        Gson gson = new Gson();
+        List<Long> friendIdList = gson.fromJson(userFriends,new TypeToken<List<Long>>(){}.getType());
+        if (friendIdList == null || friendIdList.size() < 1){
+            return null;
+        }
+        List<User> users = userMapper.selectBatchIds(friendIdList);
+        return BeanCopyUtils.copyBeanList(users,UserTagVO.class);
+    }
+
+    /**
+     * 根据id获取用户信息
+     *
+     * @param userId 获取信息的用户id
+     * @param loginUser 获取当前信息
+     * @return 获取用户的信息
+     */
+    @Override
+    public UserDetailVO getUserDetailById(Long userId, User loginUser) {
+        if (userId == null || userId <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        User user = this.getById(userId);
+        if (user == null){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"暂无该用户");
+        }
+        //判断查看信息的用户是否为当前登录用户的好友
+        String friends = loginUser.getFriends();
+        Gson gson = new Gson();
+        List<Long> friendList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
+        boolean judge = false;
+        if (friendList != null){
+            for (Long friendId: friendList) {
+                if (friendId.equals(userId)){
+                    judge = true;
+                    break;
+                }
+            }
+        }
+        UserDetailVO userDetailVO = BeanCopyUtils.copyBean(user, UserDetailVO.class);
+        if (judge){
+            //是好友
+            userDetailVO.setIsFriend(1);
+        }
+        return userDetailVO;
+    }
+
 
     /**
      * 是否为管理员
      *
-     * @param request
-     * @return
+     * @param request 获取当前登录用户信息
+     * @return 返回是否是管理员
      */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
@@ -535,11 +664,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 
 
+
     /**
      * 获取当前登录用户信息
      *
-     * @param request
-     * @return
+     * @param request 获取当前登录用户信息
+     * @return 返回登录用户信息
      */
     @Override
     public User getLoginUser(HttpServletRequest request) {

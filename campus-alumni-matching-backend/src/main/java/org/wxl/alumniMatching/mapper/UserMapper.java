@@ -4,6 +4,8 @@ import org.wxl.alumniMatching.domain.dto.UserUpdateDTO;
 import org.wxl.alumniMatching.domain.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
  * <p>
  *  Mapper 接口
@@ -20,4 +22,12 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 返回队伍主键
      */
     int updateByUserUpdateDTO(UserUpdateDTO userUpdateDTO);
+
+    /**
+     * 查找匹配用户
+     * </po>查询所有标签不为空，状态正常
+     * @param  userId 当前用户id
+     * @return 匹配用户列表
+     */
+    List<User> getMatchUsers(Long userId);
 }

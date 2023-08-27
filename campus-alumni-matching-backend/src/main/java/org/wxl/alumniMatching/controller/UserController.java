@@ -27,7 +27,6 @@ import java.util.List;
  */
 @Api(tags = "用户模块")
 @RestController
-//跨域
 @CrossOrigin(origins = {"http://127.0.0.1:5173","http://localhost:8000"},allowCredentials = "true")
 @RequestMapping("/user")
 public class UserController {
@@ -65,7 +64,7 @@ public class UserController {
      * 管理员登录
      *
      * @param userLoginDto 账号密码
-     * @param request
+     * @param request 获取当前用户信息
      * @return 登录用户信息
      */
     @ApiOperation(value = "管理员登录")
@@ -87,7 +86,7 @@ public class UserController {
      * 用户登录
      *
      * @param userLoginDto 账号密码
-     * @param request
+     * @param request 获取当前用户信息
      * @return 登录用户信息
      */
     @ApiOperation(value = "用户登录")
@@ -109,8 +108,8 @@ public class UserController {
     /**
      * 用户注销
      *
-     * @param request
-     * @return
+     * @param request 获取当前用户信息
+     * @return 退出是否成功
      */
     @ApiOperation(value = "用户注销")
     @PostMapping("/logout")
@@ -126,8 +125,8 @@ public class UserController {
     /**
      * 获取当前用户
      *
-     * @param request
-     * @return
+     * @param request 获取当前用户信息
+     * @return 当前用户信息
      */
     @ApiOperation(value = "获取当前用户信息")
     @GetMapping("/currentUser")
@@ -140,7 +139,7 @@ public class UserController {
      * 分页查询用户信息
      *
      * @param userListDto 查询条件
-     * @param request
+     * @param request 获取当前用户信息
      * @return 分页信息
      */
     @ApiOperation(value = "用户条件查询")
@@ -156,7 +155,7 @@ public class UserController {
      * @param pageNum 页面
      * @param pageSize 每页数据量
      * @param tagNameList 标签列表
-     * @return
+     * @return 分页信息
      */
     @ApiOperation(value = "查询符合标签的用户")
     @GetMapping("/search/tags")
@@ -178,8 +177,8 @@ public class UserController {
      * 修改用户信息
      *
      * @param userUpdateDTO 修改的数据
-     * @param request
-     * @return
+     * @param request 获取当前用户信息
+     * @return 是否修改成功
      */
     @ApiOperation(value = "修改用户信息")
     @PutMapping("/updateUser")
@@ -207,7 +206,7 @@ public class UserController {
      *
      * @param pageNum 页码
      * @param pageSize 每页数量
-     * @param request
+     * @param request 获取当前用户信息
      * @return 分页数据
      */
     @ApiOperation(value = "主页推荐用户信息列表")
@@ -217,6 +216,24 @@ public class UserController {
     ){
         PageVO pageVO = userService.getRecommendUser(pageNum,pageSize,request);
         return ResultUtils.success(pageVO);
+    }
+
+
+    /**
+     * 根据id获取用户信息
+     *
+     * @param userId 获取信息的用户id
+     * @param request 获取当前信息
+     * @return 获取用户的信息
+     */
+    @ApiOperation("根据id获取用户信息")
+    @GetMapping("/get")
+    public BaseResponse<UserDetailVO> getUserDetailById(Long userId,HttpServletRequest request){
+        if (userId == null || userId <= 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getUserDetailById(userId,loginUser));
     }
 
 
@@ -231,11 +248,49 @@ public class UserController {
     @GetMapping("/match")
     public BaseResponse matchUsers(Integer pageNum,Integer pageSize, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
+        if (loginUser.getTags()  == null ){
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配用户，请添加合适的标签");
+        }
         PageVO matchUsers = userService.getMatchUsers(pageNum, pageSize, loginUser);
-        if (loginUser.getTags()  == null || matchUsers == null){
-            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配用户");
+        if (matchUsers == null){
+            return ResultUtils.error(ErrorCode.NULL_ERROR,"暂无匹配用户，请添加合适的标签");
         }
         return ResultUtils.success(matchUsers);
+    }
+
+
+    /**
+     * 添加好友
+     *
+     * @param friendId 好友id
+     * @param request 当前用户信息
+     * @return 是否添加成功
+     */
+    @ApiOperation(value = "添加好友")
+    @PostMapping("/add/friend")
+    public BaseResponse<Boolean> addFriends(Long friendId, HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        if (friendId == null || friendId <=0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        boolean addJudge = userService.addFriend(friendId,loginUser);
+        if (!addJudge){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"添加好友失败");
+        }
+        return ResultUtils.success(true);
+    }
+
+    /**
+     * 关注的好友信息
+     *
+     * @param request 当前用户信息
+     * @return 返回关注的好友列表
+     */
+    @ApiOperation(value = "关注列表")
+    @GetMapping("/list/friend")
+    public BaseResponse<List<UserTagVO>> friendList(HttpServletRequest request) {
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.getFriendList(loginUser));
     }
 
 
