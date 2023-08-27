@@ -13,6 +13,7 @@ import TeamAddPage from "../pages/team/TeamAddPage.vue";
 import TeamUpdatePage from "../pages/team/TeamUpdatePage.vue";
 import ChatRoomPage from "../pages/ChatRoomPage.vue";
 import TeamDetailPage from "../pages/team/TeamDetailPage.vue";
+import UserDetailsPage from "../pages/user/UserDetailsPage.vue"
 
 
 // 2. 定义一些路由
@@ -28,6 +29,7 @@ const routes = [
     { path: '/user/home', title: '个人信息', meta:{showBottom: true, showHeader: true, showBack: false,showRight:false},component: UserHomePage},
     { path: '/user/login', title: '登录账号',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserLoginPage},
     { path: '/user/register', title: '注册账号',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserRegisterPage},
+    { path: '/user/details', title: '个人资料',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserDetailsPage},
     { path: '/team/add', title: '创建队伍',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: TeamAddPage},
     { path: '/team/update', title: '更新队伍', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false},component: TeamUpdatePage},
     { path: '/team/chatRoom/:id', meta:{showBottom: false, showHeader: false, showBack: false,showRight:false}, component: ChatRoomPage},

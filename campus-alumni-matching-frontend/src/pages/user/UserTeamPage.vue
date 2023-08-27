@@ -4,87 +4,104 @@
         <van-cell title="新的队伍" is-link to="/team" />
     </div>
     <div id="joinUserOrTeam">
-        <van-tabs v-model:active="active" @change="onTabChange">
-            <van-tab title="队伍" name="team" />
-            <van-tab title="好友" name="user" />
-        </van-tabs>
+        <van-tabs v-model:active="active">
+            <van-tab v-for="index in 2">
+                <template #title v-if="index === 1">
+                    <van-icon name="contact" />关注列表
+                </template>
 
-        <AddUserList :userList="userList" />
-        <JoinTeamList :teamList="teamList" />
-        <van-empty v-if="teamList?.length < 1 && userList?.length < 1" description="数据为空" />
+                <template #title v-if="index === 2">
+                    <van-icon name="friends-o" />群聊列表
+                </template>
+                <AddUserList :user-list="userList" :loading="loading_user" v-if="index === 1" />
+                <JoinTeamList :team-list="teamList" :loading="loading_team" v-if="index === 2" />
+                <!-- <van-empty v-if="(!userList || userList.length < 1) && (!teamList || teamList.length < 1)" description="数据为空" /> -->
+            </van-tab>
+        </van-tabs>
     </div>
     <div id="addTeam">
-        
-        <van-floating-bubble axis="xy" icon="friends-o" magnetic="x" v-model:offset="offset"   @click="onClick" />
 
+        <van-floating-bubble axis="xy" icon="friends-o" magnetic="x" v-model:offset="offset" @click="onClick" />
     </div>
 </template>
 
+
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { ref, watchEffect } from 'vue';
+import myAxios from "../../plugins/myAxios"
+import { showFailToast } from 'vant';
 import JoinTeamList from "../../components/JoinTeamList.vue";
 import AddUserList from "../../components/AddUserList.vue";
-import { onMounted, ref } from "vue";
-import myAxios from "../../plugins/myAxios";
-import { showFailToast } from 'vant';
-
-
-const active = ref('team')
-const router = useRouter();
+import {UserType} from "../../models/user";
+import { useRouter } from "vue-router";
 
 /**
- * 切换查询状态
- * @param name
+ * 推荐栏
  */
-const onTabChange = (name: string) => {
-    // 查公开
-    if (name === 'user') {
-        addUserList();
-    } else {
-        // 查加密
-        joinTeamList();
-    }
+ const router = useRouter();
+const active = ref(0)
+const userList = ref([]);
+const loading_user = ref(true);
+const loading_team = ref(true);
+const teamList = ref([]);
+
+
+const loadData_user = async () => {
+  let userListData;
+  loading_user.value = true;
+  // 心动模式，根据标签匹配用户
+
+    userListData = await myAxios.get('/user/list/friend')
+        .then(function (response) {
+          return response?.data;
+        })
+        .catch(function (error) {
+          showFailToast("请求失败"+error)
+        })
+  if (userListData) {
+    userListData.forEach((user: UserType) => {
+      if (user.tags) {
+        user.tags = JSON.parse(user.tags);
+      }
+    })
+    userList.value = userListData;
+    console.log(userList.value)
+  }
+  loading_user.value = false;
+}
+/**
+ * 加载队伍信息
+ */
+const loadData_team = async () => {
+  let teamListData;
+  loading_team.value = true;
+  // 心动模式，根据标签匹配用户
+    teamListData = await myAxios.get('/team/list/join')
+        .then(function (response) {
+          return response?.data;
+        })
+        .catch(function (error) {
+          showFailToast("请求失败"+error)
+        })
+  teamList.value = teamListData;
+  loading_team.value = false;
 }
 
 
-const teamList = ref([]);
-const userList = ref([]);
-
-// 页面加载时只触发一次
-onMounted(() => {
-    joinTeamList();
+watchEffect(() => {
+  if(active.value == 0){
+    loadData_user();
+  }else{
+    loadData_team();
+  }
+  
 })
 
-/**
- * 已加入的队伍
- */
-const joinTeamList = async () => {
-    const res = await myAxios.get("/team/list/join");
-    if (res?.code === 0) {
-        teamList.value = res.data;
-    } else {
-        showFailToast('加载队伍失败，请刷新重试');
-    }
-}
-
-/**
- * 关注的好友
- */
-const addUserList = async () => {
-    const res = await myAxios.get("/team/list/join", {
-
-    });
-    if (res?.code === 0) {
-        teamList.value = res.data;
-    } else {
-        showFailToast('加载队伍失败，请刷新重试');
-    }
-}
-
-const offset = ref({y: 555 });
+const offset = ref({ y: 555 });
 const onClick = () => {
     router.push({
         path: "/team/add"
     })
 };
-</script>
+  
+  </script>

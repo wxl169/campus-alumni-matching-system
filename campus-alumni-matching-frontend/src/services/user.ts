@@ -1,5 +1,5 @@
 import myAxios from "../plugins/myAxios";
-import { setCurrentUserState } from "../status/user";
+import { setCurrentUserState, setUerDetails } from "../status/user";
 import {  showFailToast } from 'vant';
 
 export const getCurrentUser = async () => {
@@ -10,6 +10,21 @@ export const getCurrentUser = async () => {
         return res.data;
     }else{
         showFailToast("请先登录");
+    }
+    return null;
+}
+
+export const getUserDetail = async (userId : number) =>{
+    const res = await myAxios.get('/user/get', {
+        params: {
+            userId: userId
+        }
+    });
+    if(res.code === 0){
+        setUerDetails(res.data)
+        return res.data;
+    }else{
+        showFailToast(res.description);
     }
     return null;
 }

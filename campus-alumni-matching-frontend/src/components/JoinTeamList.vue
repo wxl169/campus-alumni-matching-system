@@ -17,6 +17,7 @@
       </van-button>
     </template>
   </van-card>
+  <van-empty v-if="!teamList || teamList.length < 1" description="数据为空" />
 </template>
 
 <script setup lang="ts">

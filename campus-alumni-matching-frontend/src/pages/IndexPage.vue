@@ -10,7 +10,7 @@
     </template>
     <UserCardList :user-list="userList" :loading="loading_user" v-if="index === 1"/>
     <TeamCardList :team-list="teamList" :loading="loading_team" v-if="index === 2"/>
-    <van-empty v-if="(!userList || userList.length < 1) && (!teamList || teamList.length < 1)" description="数据为空"/>
+    <!-- <van-empty v-if="(!userList || userList.length < 1) && (!teamList || teamList.length < 1)" description="数据为空"/> -->
   </van-tab>
 
 </van-tabs>
@@ -24,7 +24,6 @@
   import UserCardList from '../components/UserCardList.vue';
   import TeamCardList from '../components/TeamCardList.vue';
   import {UserType} from "../models/user";
-  import { showLoadingToast } from 'vant';
 
 /**
  * 推荐栏

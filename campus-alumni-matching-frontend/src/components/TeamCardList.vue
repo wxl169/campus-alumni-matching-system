@@ -38,6 +38,7 @@
       <van-field v-model="password" placeholder="请输入密码"/>
     </van-dialog>
   </div>
+  <van-empty v-if="!teamList || teamList.length < 1" description="数据为空"/>
 </template>
 
 
