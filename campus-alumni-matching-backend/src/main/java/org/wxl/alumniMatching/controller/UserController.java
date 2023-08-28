@@ -9,14 +9,12 @@ import org.springframework.web.bind.annotation.*;
 import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.common.ResultUtils;
-import org.wxl.alumniMatching.domain.dto.UserListDTO;
-import org.wxl.alumniMatching.domain.dto.UserLoginDTO;
-import org.wxl.alumniMatching.domain.dto.UserRegisterDTO;
-import org.wxl.alumniMatching.domain.dto.UserUpdateDTO;
+import org.wxl.alumniMatching.domain.dto.*;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.*;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.IUserService;
+import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -281,6 +279,27 @@ public class UserController {
     }
 
     /**
+     * 取消好友关注
+     *
+     * @param friendId 好友id
+     * @param request 当前用户信息
+     * @return 是否取消成功
+     */
+    @ApiOperation(value = "取消好友关注")
+    @DeleteMapping("/delete/friend")
+    public BaseResponse<Boolean> unfollowById(Long friendId,HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        if (friendId == null || friendId <=0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        boolean unfollowById = userService.unfollowById(friendId,loginUser);
+        if (!unfollowById){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"取消关注失败");
+        }
+        return  ResultUtils.success(true);
+    }
+
+    /**
      * 关注的好友信息
      *
      * @param request 当前用户信息
@@ -293,5 +312,25 @@ public class UserController {
         return ResultUtils.success(userService.getFriendList(loginUser));
     }
 
+    /**
+     * 添加标签
+     *
+     * @param userAddTagDTO 标签列表
+     * @param request 当前登录用户
+     * @return 是否添加成功
+     */
+    @ApiOperation(value = "添加标签")
+    @PostMapping("/add/tags")
+    public BaseResponse<Boolean> userAddTags(@RequestBody UserAddTagDTO userAddTagDTO, HttpServletRequest request){
+        if (userAddTagDTO.getTagNameList() == null || userAddTagDTO.getTagNameList().size() == 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请至少选择一个标签");
+        }
+        User loginUser = userService.getLoginUser(request);
+        boolean judge = userService.userAddTags(userAddTagDTO.getTagNameList(),loginUser);
+        if (!judge){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"添加失败");
+        }
+        return ResultUtils.success(true);
+    }
 
 }

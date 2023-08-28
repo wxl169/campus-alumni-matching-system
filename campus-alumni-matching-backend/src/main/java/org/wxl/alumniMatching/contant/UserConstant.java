@@ -80,4 +80,9 @@ public interface UserConstant {
      * 判断账号是否含特殊符号的正则表达式
      */
     String USER_ACCOUNT_REGULAR = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+
+    /**
+     * 标签或好友列表未空
+     */
+    String TAG_FRIEND_NULL = "[]";
 }

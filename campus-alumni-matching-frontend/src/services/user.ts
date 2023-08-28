@@ -30,3 +30,6 @@ export const getUserDetail = async (userId : number) =>{
 }
 
 
+
+
+

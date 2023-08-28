@@ -86,11 +86,6 @@ const loadData_team = async () => {
           showFailToast("请求失败"+error)
         })
   if (teamListData) {
-    // teamListData.forEach((user: UserType) => {
-    //   if (user.tags) {
-    //     user.tags = JSON.parse(user.tags);
-    //   }
-    // })
     teamList.value = teamListData;
   }
   loading_team.value = false;

@@ -13,7 +13,7 @@
                 <template #title v-if="index === 2">
                     <van-icon name="friends-o" />群聊列表
                 </template>
-                <AddUserList :user-list="userList" :loading="loading_user" v-if="index === 1" />
+                <UserCardList :user-list="userList" :loading="loading_user" v-if="index === 1" />
                 <JoinTeamList :team-list="teamList" :loading="loading_team" v-if="index === 2" />
                 <!-- <van-empty v-if="(!userList || userList.length < 1) && (!teamList || teamList.length < 1)" description="数据为空" /> -->
             </van-tab>
@@ -31,7 +31,7 @@ import { ref, watchEffect } from 'vue';
 import myAxios from "../../plugins/myAxios"
 import { showFailToast } from 'vant';
 import JoinTeamList from "../../components/JoinTeamList.vue";
-import AddUserList from "../../components/AddUserList.vue";
+import UserCardList from "../../components/UserCardList.vue";
 import {UserType} from "../../models/user";
 import { useRouter } from "vue-router";
 
@@ -65,7 +65,6 @@ const loadData_user = async () => {
       }
     })
     userList.value = userListData;
-    console.log(userList.value)
   }
   loading_user.value = false;
 }

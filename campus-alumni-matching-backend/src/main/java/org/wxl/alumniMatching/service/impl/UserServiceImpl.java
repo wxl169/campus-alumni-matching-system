@@ -464,7 +464,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         //查询所有标签不为空，状态正常
         List<User> userList = userMapper.getMatchUsers(loginUser.getId());
         //将自己关注的用户排除
-        String friends = loginUser.getFriends();
+        User user1 = this.getById(loginUser.getId());
+        String friends = user1.getFriends();
         Gson gson = new Gson();
         List<Long> friendIdList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
         if (friendIdList != null){
@@ -478,7 +479,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             }).collect(Collectors.toList());
         }
         //自己的标签
-        String tags = loginUser.getTags();
+        String tags = user1.getTags();
         List<String> tagList = gson.fromJson(tags,new TypeToken<List<String>>(){}.getType());
 
         //用户列表的下标 =》 相似度
@@ -491,7 +492,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             }
             String userTags = user.getTags();
             //无标签或者为当前用户自己
-            if (StringUtils.isBlank(userTags) || user.getId().equals(loginUser.getId())) {
+            if (StringUtils.isBlank(userTags) || user.getId().equals(user1.getId())) {
                 continue;
             }
             List<String> userTagList = gson.fromJson(userTags, new TypeToken<List<String>>() {
@@ -530,12 +531,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * 添加好友
      *
      * @param friendId 好友id
-     * @param user 当前登录用户信息
+     * @param loginUser 当前登录用户信息
      * @return 返回是否添加成功
      */
     @Override
-    public boolean addFriend(Long friendId, User user) {
-        if (friendId == null || friendId <=0 || friendId.equals(user.getId()) ){
+    public boolean addFriend(Long friendId, User loginUser) {
+        if (friendId == null || friendId <=0 || friendId.equals(loginUser.getId()) ){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
         }
         // 只有一个线程能获取到锁
@@ -546,7 +547,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                     //获取用户的好友列表信息
                     String friendJson = null;
                     Gson gson = new Gson();
-                    if (StringUtils.isBlank(user.getFriends())){
+                    User user = this.getById(loginUser.getId());
+                    if (StringUtils.isBlank(user.getFriends()) || UserConstant.TAG_FRIEND_NULL.equals(user.getFriends())){
                         friendJson =  String.format("[%d]", friendId);
                     }else{
                         String friends = user.getFriends();
@@ -586,16 +588,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     /**
      * 关注的好友信息
      *
-     * @param user 用户信息
+     * @param loginUser 用户信息
      * @return 返回关注的好友列表
      */
     @Override
-    public List<UserTagVO> getFriendList(User user) {
-        System.out.println("当前登录信息:" + user);
-        if (user == null){
+    public List<UserTagVO> getFriendList(User loginUser) {
+        if (loginUser == null){
             throw  new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
         }
-        String userFriends = user.getFriends();
+        loginUser = this.getById(loginUser.getId());
+        String userFriends = loginUser.getFriends();
         Gson gson = new Gson();
         List<Long> friendIdList = gson.fromJson(userFriends,new TypeToken<List<Long>>(){}.getType());
         if (friendIdList == null || friendIdList.size() < 1){
@@ -621,25 +623,73 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (user == null){
             throw new BusinessException(ErrorCode.NULL_ERROR,"暂无该用户");
         }
+        loginUser = this.getById(loginUser.getId());
         //判断查看信息的用户是否为当前登录用户的好友
-        String friends = loginUser.getFriends();
-        Gson gson = new Gson();
-        List<Long> friendList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
-        boolean judge = false;
-        if (friendList != null){
-            for (Long friendId: friendList) {
-                if (friendId.equals(userId)){
-                    judge = true;
-                    break;
-                }
-            }
-        }
+        boolean judge = judgeISFriend(userId,loginUser);
+
         UserDetailVO userDetailVO = BeanCopyUtils.copyBean(user, UserDetailVO.class);
         if (judge){
             //是好友
             userDetailVO.setIsFriend(1);
         }
         return userDetailVO;
+    }
+
+    /**
+     * 取消好友关注
+     *
+     * @param friendId 好友id
+     * @param loginUser 当前用户信息
+     * @return 是否取消成功
+     */
+    @Override
+    public boolean unfollowById(Long friendId, User loginUser) {
+        if (friendId == null || friendId <=0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        //首先判断该好友id是否为用户好友
+        User user = this.getById(loginUser.getId());
+        String friends = user.getFriends();
+        Gson gson = new Gson();
+        List<Long> friendList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
+        if (friendList == null || friendList.size() < 1){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"请求参数错误");
+        }
+        //除去要删除的好友id
+        List<Long> friendIdList = friendList.stream()
+                .filter(friend -> !friend.equals(friendId))
+                .collect(Collectors.toList());
+        String updateFriendId = gson.toJson(friendIdList);
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.set(User::getFriends,updateFriendId)
+                .eq(User::getId,loginUser.getId());
+        boolean update = this.update(updateWrapper);
+        if (!update){
+            throw  new BusinessException(ErrorCode.SYSTEM_ERROR,"修改好友列表失败");
+        }
+        return true;
+    }
+
+    /**
+     * 添加标签
+     *
+     * @param tagNameList 标签列表
+     * @param loginUser 当前登录用户
+     * @return 是否添加成功
+     */
+    @Override
+    public boolean userAddTags(List<String> tagNameList, User loginUser) {
+        if (tagNameList == null || tagNameList.size() == 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请至少选择一个标签");
+        }
+        User user = this.getById(loginUser.getId());
+        Gson gson = new Gson();
+        if (StringUtils.isBlank(user.getTags()) || UserConstant.TAG_FRIEND_NULL.equals(user.getTags())){
+            //直接添加
+            String json = gson.toJson(tagNameList);
+            System.out.println(json);
+        }
+        return false;
     }
 
 
@@ -721,6 +771,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             }
         }
 
+    }
+
+    /**
+     * 判断查看信息的用户是否为当前登录用户的好友
+     *
+     * @param userId 查看信息的用户
+     * @param loginUser 当前登录用户
+     * @return 是否为好友
+     */
+    private  boolean judgeISFriend(Long userId,User loginUser){
+        String friends = loginUser.getFriends();
+        Gson gson = new Gson();
+        List<Long> friendList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
+        boolean judge = false;
+        if (friendList != null && friendList.size() >= 1){
+            for (Long friendId: friendList) {
+                if (friendId.equals(userId)){
+                    judge = true;
+                    break;
+                }
+            }
+        }
+        return judge;
     }
 
 }

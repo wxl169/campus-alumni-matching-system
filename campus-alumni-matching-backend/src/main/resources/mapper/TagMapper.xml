@@ -2,4 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="org.wxl.alumniMatching.mapper.TagMapper">
 
+    <select id="getShowTag" resultType="org.wxl.alumniMatching.domain.entity.Tag">
+        select id,tag_name from tb_tag where is_delete = 0 and is_parent = 1;
+    </select>
 </mapper>

@@ -13,7 +13,7 @@
             <!-- 昵称 -->
             <div class="username">{{ user.username || user.userAccount }}</div>
             <!-- 简介 -->
-            <div class="profile">{{ user.profile }}</div>
+            <div class="profile">简介：{{ user.profile }}</div>
             <!-- 标签 -->
             <van-space :size="5" wrap>
               <van-tag plain type="primary" v-for="tag in user.tags"  size="medium">

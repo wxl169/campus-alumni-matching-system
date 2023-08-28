@@ -70,7 +70,6 @@ const doQuitTeam = async (teamId: number) => {
         title: '确认要退出队伍？',
     })
         .then(async () => {
-            console.log(teamId)
             const res = await myAxios({
                 url: '/team/quit',
                 method: "post",
@@ -98,7 +97,6 @@ const doDeleteTeam = async (teamId: number) => {
         message:'解散队伍后，所有成员将退出队伍，且操作不可逆'
     })
         .then(async () => {
-            console.log(teamId)
             const res = await myAxios({
                 url: '/team/delete',
                 method: "delete",

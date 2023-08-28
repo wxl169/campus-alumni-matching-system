@@ -165,4 +165,22 @@ public interface IUserService extends IService<User> {
      * @return 获取用户的信息
      */
     UserDetailVO getUserDetailById(Long userId, User loginUser);
+
+    /**
+     * 取消好友关注
+     *
+     * @param friendId 好友id
+     * @param loginUser 当前用户信息
+     * @return 是否取消成功
+     */
+    boolean unfollowById(Long friendId, User loginUser);
+
+    /**
+     * 添加标签
+     *
+     * @param tagNameList 标签列表
+     * @param loginUser 当前登录用户
+     * @return 是否添加成功
+     */
+    boolean userAddTags(List<String> tagNameList, User loginUser);
 }
