@@ -2,7 +2,7 @@
     <div id="teamPage">
         <van-search v-model="searchText" show-action placeholder="搜索队伍" @search="onSearch" @cancel="onCancel" />
         <!-- <van-button type="primary" @click="doJoinTeam">创建队伍</van-button> -->
-        <team-card-list :team-list="teamList" />
+        <team-card-list :team-list="teamList" :loading="loading_team"/>
 
         <van-empty v-if="teamList?.length < 1" description="数据为空"/>
     </div>
@@ -18,7 +18,7 @@ import {  showFailToast } from 'vant';
 const teamList = ref([]);
 //搜索框
 const searchText = ref('');
-
+const loading_team = ref(true);
 
 
 /**
@@ -28,6 +28,7 @@ const searchText = ref('');
  * @returns {Promise<void>}
  */
  const listTeam = async (val = '') => {
+  loading_team.value = true;
   const res = await myAxios.get("/team/list", {
     params: {
       searchText: val,
@@ -39,6 +40,7 @@ const searchText = ref('');
   } else {
     showFailToast('加载队伍失败，请刷新重试');
   }
+  loading_team.value = false;
 }
 
 // 页面加载时只触发一次

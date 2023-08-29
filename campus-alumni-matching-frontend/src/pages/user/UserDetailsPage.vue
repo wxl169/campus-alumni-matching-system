@@ -103,11 +103,8 @@ const doCancel = async (friendId: number) => {
  * @param friendId 
  */
 const sendMessage = async (friendId: number) => {
-  router.push({
-    path: '/user/chatRoom',
-    query: {
-      friendId
-    }
+    router.push({
+    path:'/user/chatRoom/'+friendId,
   });
 }
 /**

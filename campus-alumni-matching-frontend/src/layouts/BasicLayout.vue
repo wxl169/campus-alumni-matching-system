@@ -17,7 +17,7 @@
   <!-- v-model="active" @change="onChange" -->
   <van-tabbar v-if="route.meta.showBottom" route>
     <van-tabbar-item icon="wap-home-o" name="index" replace to="/">主页</van-tabbar-item>
-    <van-tabbar-item icon="smile-comment-o" name="team" replace to="" badge="99+">消息</van-tabbar-item>
+    <van-tabbar-item icon="smile-comment-o" name="team" replace to="/message">消息</van-tabbar-item>
     <van-tabbar-item icon="friends-o" name="user" replace to="/userTeam">通讯录</van-tabbar-item>
     <van-tabbar-item icon="user-o" name="user" replace to="/user/home">我</van-tabbar-item>
   </van-tabbar>

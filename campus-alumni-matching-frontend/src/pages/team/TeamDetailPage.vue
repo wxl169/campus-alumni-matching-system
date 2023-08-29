@@ -5,16 +5,25 @@
             <van-grid gutter="6">
                 <van-space wrap>
                     <van-grid-item v-for="user in userList">
+                        <div style="width: 50px;height: 50px;" @click="toUserDetail(user.id)">
                         <van-image :src="user.avatarUrl" round width="3.5rem" height="3.5rem" />
                         {{ user.username }}
+                        </div>
                     </van-grid-item>
                 </van-space>
             </van-grid>
         </div>
-        <van-divider>操作</van-divider>
-        <div>
+        
+        <div style="margin-top: 50px;">
+            <van-divider>操作</van-divider>
             <van-cell center title="群聊名称" :value="teamName" size="large" />
-            <van-cell center title="群公告" value="" size="large" :label="description" />
+            <van-cell center title="群公告" value="" size="large" :label="description"
+                v-if="description != null && description != ''" />
+            <van-cell center title="群公告" value="群主很懒，还没有群介绍哦" size="large"
+                v-if="description == null || description == ''" />
+            <van-cell center title="创建时间" :value="createTime" />
+            <van-cell center title="过期时间" :value="expireTime" v-if="expireTime != null" />
+            <van-cell center title="过期时间" value="暂未设置过期时间" v-if="expireTime == null" />
             <van-cell title="我在群里的昵称" :value="username" size="large" />
             <van-space direction="vertical" fill style="margin-top: 20px;">
                 <van-cell title="修改队伍信息" is-link  v-if="leaderId === currentUser?.id" @click="toUpdateTeam(teamId)"/>
@@ -42,6 +51,8 @@ const teamName = ref("");
 const description = ref("");
 const username = ref("");
 const leaderId = ref("")
+const expireTime = ref();
+const createTime = ref();
 let teamId = ref(0)
 // 当前用户信息
 const currentUser = ref(null);
@@ -58,6 +69,8 @@ onMounted(async () => {
     userList.value = teamAndUser.value.userList;
     username.value = currentUser.value.username;
     leaderId.value = teamAndUser.value.leaderId;
+    expireTime.value = teamAndUser.value.expireTime;
+    createTime.value = teamAndUser.value.createTime;
 })
 
 
@@ -126,6 +139,21 @@ const doDeleteTeam = async (teamId: number) => {
     }
   });
 };
+
+/**
+ * 点击头像进入用户详情
+ */
+ const toUserDetail = (userId:number) =>{
+    if(userId != currentUser.value.id){
+         router.push({
+        path: '/user/details',
+        query: {
+            userId
+        }
+    });
+    }
+
+ }
 
 </script>
     
