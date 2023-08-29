@@ -47,4 +47,6 @@ public class TeamUserListVO implements Serializable {
 
     @ApiModelProperty(value = "加入队伍的成员")
     List<UserShowVO> userList;
+
+
 }

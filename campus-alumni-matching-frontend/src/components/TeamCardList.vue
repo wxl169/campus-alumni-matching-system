@@ -1,107 +1,83 @@
 <template>
-  <div id="teamCardList">
-    <van-card
-    v-for="team in props.teamList"
-    :desc="`队伍详情：${team.description}`"
-    :tag="team.maxNum+`人组`"
-    :title="`${team.teamName} `"
-    :thumb="`${team.avatarUrl}`"
-  >
+    <van-loading vertical v-if="loading">
+        <template #icon>
+            <van-icon name="star-o" size="30" />
+        </template>
+        加载中...
+    </van-loading>
 
-    <template #tags>
-        <van-tag plain type="danger" style="margin-right: 8px; margin-top: 8px">
-          {{
-            teamStatusEnum[team.status]
-          }}
-        </van-tag>
-      </template>
-      <template #bottom>
-        <div>
-          <!-- {{ `队伍人数: ${team.hasJoinNum}/${team.maxNum}` }} -->
-        </div>
-        <div v-if="team.expireTime">
-          {{ '过期时间: ' + team.expireTime }}
-        </div>
-        <div>
-          {{ '创建时间: ' + team.createTime }}
-        </div>
-      </template>
-      <template #footer>
-        <!-- 直接不显示已加入的队伍 -->
-        <van-button size="small" type="primary" v-if="team.leaderId !== currentUser?.id" plain
-                    @click="preJoinTeam(team)">
-          加入队伍
-        </van-button>
-      </template>
-    </van-card>
-     <van-dialog v-model:show="showPasswordDialog" title="请输入密码" show-cancel-button @confirm="doJoinTeam" @cancel="doJoinCancel">
-      <van-field v-model="password" placeholder="请输入密码"/>
-    </van-dialog>
-  </div>
-  <van-empty v-if="!teamList || teamList.length < 1" description="数据为空"/>
+    <van-skeleton title avatar :row="3" :loading="props.loading" v-for="team in props.teamList" class="skeleton">
+        <van-cell :border="false" is-link center @click="toTeamDetails(team.id)">
+            <template #title>
+                <!-- 用户卡片 -->
+                <van-row :wrap="false" align="center">
+                    <!-- 左侧头像 -->
+                    <van-col>
+                        <van-image :src="team.avatarUrl" fit="cover" height="60px" round width="60px" />
+                    </van-col>
+                    <!-- 右侧信息 -->
+                    <van-col offset="1">
+                        <!-- 昵称 -->
+
+                        <div class="teamName">{{ team.teamName }}</div>
+                        <!-- 简介 -->
+                        <div class="description" v-if="team.description !== null && team.description != ''">描述：{{
+                            team.description }}</div>
+                        <div class="description" v-if="team.description == null || team.description == ''">描述：群主很懒，还没有群介绍哦</div>
+                        
+                        <!-- 标签 -->
+                        <van-space :size="5" wrap>
+                            <van-tag plain size="large" type="danger" style="margin-right: 8px; margin-top: 8px">
+                                {{
+                                    teamStatusEnum[team.status]
+                                }}
+                            </van-tag>
+                            <van-tag size="large" type="primary" style="margin-right: 8px; margin-top: 8px">
+                                {{ team.maxNum + `人组` }}
+                            </van-tag>
+                        </van-space>
+                    </van-col>
+                </van-row>
+            </template>
+            <!-- 右侧内容 -->
+        </van-cell>
+        <van-divider />
+    </van-skeleton>
+    <van-empty v-if="!teamList || teamList.length < 1" description="数据为空" />
 </template>
 
-
-
-
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 import { TeamType } from '../models/team';
-import {teamStatusEnum} from "../constants/team";
-import { showSuccessToast, showFailToast } from 'vant';
-import {getCurrentUser} from "../services/user";
-import myAxios from "../plugins/myAxios";
+import { useRouter } from "vue-router";
+import { getCurrentUser } from "../services/user";
+import { teamStatusEnum } from "../constants/team";
 
-interface TeamCardListProps{
-    teamList:TeamType[];
+const router = useRouter()
+const currentUser = ref();
+
+
+interface TeamCardListProps {
+    loading: boolean;
+    teamList: TeamType[];
 }
 
-const props = withDefaults(defineProps<TeamCardListProps>(),{
-    teamList:[] as TeamType[],
+const props = withDefaults(defineProps<TeamCardListProps>(), {
+    loading: true,
+    teamList: [] as TeamType[],
 });
 
-const currentUser = ref();
-const joinTeamId = ref(0);
-const showPasswordDialog = ref(false);
-const password = ref('');
-
-
 onMounted(async () => {
-  currentUser.value = await getCurrentUser();
+    currentUser.value = await getCurrentUser();
 })
 
-const preJoinTeam = (team: TeamType) => {
-  joinTeamId.value = team.id;
-  if (team.status === 0) {
-    doJoinTeam()
-  } else {
-    showPasswordDialog.value = true;
-  }
-}
-
-//清空数据
-const doJoinCancel = () => {
-  joinTeamId.value = 0;
-  password.value = '';
-}
-
-/**
- * 加入队伍
- */
-const doJoinTeam = async () => {
-  if (!joinTeamId.value) {
-    return;
-  }
-  const res = await myAxios.post('/team/join', {
-    teamId: joinTeamId.value,
-    password: password.value
-  });
-  if (res?.code === 0) {
-    showSuccessToast('加入成功');
-    doJoinCancel();
-  } else {
-    showFailToast('加入失败' + (res.description ? `,${res.description}` : ''))
-  }
+const toTeamDetails = (teamId: number) => {
+    router.push({
+        path: '/team/introduce',
+        query: {
+            teamId
+        }
+    });
 }
 
 </script>

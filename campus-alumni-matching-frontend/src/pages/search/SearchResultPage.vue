@@ -1,9 +1,5 @@
 <template>
- <user-card-list :user-list="userList" :loading="loading_user"/>
-<van-empty v-if="userList?.length < 1" description="数据为空"/>
-<!-- <van-empty description="描述文字" /> -->
-
-
+<user-card-list :user-list="userList" :loading="loading_user"/>
 </template>
 
 <script setup>
@@ -20,32 +16,6 @@ const {tags} = route.query;
 
 const userList = ref([]);
 const loading_user = ref(true);
-
-// onMounted(async () => {
-//   const userListData = await  myAxios.get('/user/search/tags', {
-//     params: {
-//       tagNameList : tags
-//     },
-//     paramsSerializer: params=>{
-//     return qs.stringify(params,{indices:false})
-//   }
-// })
-//   .then(function (response) {
-//     return response?.data
-//   })
-//   .catch(function (error) {
-//     showFailToast("请求失败")
-//   })
-//   if(userListData){
-//     userListData.forEach(user =>{
-//       if(user.tags){
-//         user.tags = JSON.parse(user.tags);
-//       }
-//     })
-//     userList.value = userListData;
-//   }
-// })
-
 
 /**
  * 加载用户数据

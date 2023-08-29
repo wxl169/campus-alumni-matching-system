@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import org.wxl.alumniMatching.common.BaseResponse;
@@ -14,7 +15,6 @@ import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.*;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.IUserService;
-import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -321,7 +321,7 @@ public class UserController {
      */
     @ApiOperation(value = "添加标签")
     @PostMapping("/add/tags")
-    public BaseResponse<Boolean> userAddTags(@RequestBody UserAddTagDTO userAddTagDTO, HttpServletRequest request){
+    public BaseResponse<Boolean> userAddTags(@RequestBody UserUpdateTagDTO userAddTagDTO, HttpServletRequest request){
         if (userAddTagDTO.getTagNameList() == null || userAddTagDTO.getTagNameList().size() == 0){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请至少选择一个标签");
         }
@@ -331,6 +331,23 @@ public class UserController {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"添加失败");
         }
         return ResultUtils.success(true);
+    }
+
+    /**
+     * 删除标签
+     *
+     * @param tagName 标签列表
+     * @param request 当前登录用户
+     * @return 是否删除成功
+     */
+    @ApiOperation(value = "删除标签")
+    @DeleteMapping("/delete/tag")
+    public BaseResponse<Boolean> userDeleteTags(String tagName, HttpServletRequest request){
+        if (StringUtils.isBlank(tagName)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请选择一个标签");
+        }
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(userService.userDeleteTags(tagName,loginUser));
     }
 
 }

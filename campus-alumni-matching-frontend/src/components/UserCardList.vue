@@ -1,4 +1,11 @@
-<template>
+<template>  
+  <van-loading vertical v-if="loading">
+  <template #icon>
+    <van-icon name="star-o" size="30" />
+  </template>
+    加载中...
+</van-loading>
+
   <van-skeleton title avatar :row="3" :loading="props.loading" v-for="user in props.userList" class="skeleton">
     <van-cell :border="false" is-link center @click="toUserDetails(user.id)">
       <template #title>

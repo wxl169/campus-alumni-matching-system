@@ -5,4 +5,8 @@
     <select id="getShowTag" resultType="org.wxl.alumniMatching.domain.entity.Tag">
         select id,tag_name from tb_tag where is_delete = 0 and is_parent = 1;
     </select>
+
+    <select id="getAllChildrenTagName" resultType="java.lang.String">
+        select tag_name from tb_tag where is_delete = 0 and is_parent = 0 and tag_name is not null ;
+    </select>
 </mapper>

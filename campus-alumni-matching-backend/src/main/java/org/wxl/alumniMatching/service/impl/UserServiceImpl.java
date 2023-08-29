@@ -19,6 +19,7 @@ import org.wxl.alumniMatching.domain.dto.UserUpdateDTO;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.*;
 import org.wxl.alumniMatching.exception.BusinessException;
+import org.wxl.alumniMatching.mapper.TagMapper;
 import org.wxl.alumniMatching.mapper.UserMapper;
 import org.wxl.alumniMatching.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -47,6 +48,8 @@ import java.util.stream.Collectors;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private TagMapper tagMapper;
     @Resource
     private RedisTemplate<String,Object> redisTemplate;
     @Resource
@@ -267,43 +270,71 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (CollectionUtils.isEmpty(tagNameList)){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"标签为空");
         }
-        //SQL查询方式
-//        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-//        //拼接 and 查询
-//        //like '%Java%' and like '%Python%'
-//        for (String tagName : tagNameList){
-//            queryWrapper = queryWrapper.like(StringUtils.hasText(tagName),User::getTags,tagName);
-//        }
-//        List<User> userList = userMapper.selectList(queryWrapper);
-//        List<UserTagVO> userTagVOS = BeanCopyUtils.copyBeanList(userList, UserTagVO.class);
-
-        //内存查询方式
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserStatus, UserConstant.USER_STATUS_NORMAL);
-        //1.先查询所有用户
-        List<User> userList = userMapper.selectList(queryWrapper);
-        Gson gson = new Gson();
-        //2.在内存中判断是否包含要求的标签
-        List<User> users = userList.stream().filter(user -> {
-            String tagsStr = user.getTags();
-//            if (StringUtils.isBlank(tagsStr)){
-//                return false;
-//            }
-            Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {}.getType());
-            //Optional.ofNullable相当于if判断，如果不为空这返回当前值，为空则为自己付的值。
-            tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
-            for (String tagName : tagNameList) {
-                if (!tempTagNameSet.contains(tagName)) {
-                    return false;
+        //获取标签库已有的标签
+        List<String> childrenTagName = tagMapper.getAllChildrenTagName();
+        tagNameList = tagNameList.stream().filter(tag -> {
+            if (StringUtils.isBlank(tag)){
+                return false;
+            }
+            //比较标签库是否有该标签
+            for (String childrenName : childrenTagName) {
+                if (childrenName.equals(tag)) {
+                    return true;
                 }
             }
-            return true;
-        })
+            return false;
+        }).collect(Collectors.toList());
+        if (tagNameList.size() == 0){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请选择展示标签");
+        }
+
+        //将数据存入缓存中
+        String redisKey = String.format("alumniMatching:user:searchUserByTag:%s",tagNameList.get(0));
+        PageVO pageVO = null;
+        Gson gson = new Gson();
+        List<UserTagVO> userTagVOList = null;
+        //查询第一个标签数据
+        userTagVOList = (List<UserTagVO>) redisTemplate.opsForValue().get(redisKey);
+        if (userTagVOList == null){
+            //如果第一个标签没有数据，则查出存入redis
+            //查询状态正常，有标签的所有用户
+            List<User> userList = userMapper.selectAllUserHavingTag();
+            //2.在内存中判断是否包含要求的标签
+            List<String> finalTagNameList1 = tagNameList;
+            List<User> users = userList.stream().filter(user -> {
+                String tagsStr = user.getTags();
+                Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {}.getType());
+                tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
+                return tempTagNameSet.contains(finalTagNameList1.get(0));
+            }).collect(Collectors.toList());
+            userTagVOList = BeanCopyUtils.copyBeanList(users, UserTagVO.class);
+            redisTemplate.opsForValue().set(redisKey,userTagVOList,60,TimeUnit.MINUTES);
+        }
+        if (tagNameList.size() > 1){
+            //如果返回一个以上，则在第一个标签数据的基础上，比较。
+            //1.先查询所有用户
+            List<String> finalTagNameList = tagNameList;
+            userTagVOList = userTagVOList.stream().filter(user -> {
+                String tagsStr = user.getTags();
+                Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {}.getType());
+                //如果tempTagNameSet为空，则赋初值
+                tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
+                for (String tagName : finalTagNameList) {
+                    //集合中数据比较
+                    if (!tempTagNameSet.contains(tagName)) {
+                        return false;
+                    }
+                }
+                return true;
+            }).collect(Collectors.toList());
+            redisTemplate.opsForValue().set(redisKey,userTagVOList,60,TimeUnit.MINUTES);
+        }
+        userTagVOList = userTagVOList.stream()
                 .skip((long) (pageNum - 1) * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList());
-
-        return new PageVO(BeanCopyUtils.copyBeanList(users, UserTagVO.class), (long) users.size());
+        pageVO = new PageVO(userTagVOList, (long) userTagVOList.size());
+        return pageVO;
     }
 
     /**
@@ -684,12 +715,83 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         User user = this.getById(loginUser.getId());
         Gson gson = new Gson();
+
+        String tags = null;
         if (StringUtils.isBlank(user.getTags()) || UserConstant.TAG_FRIEND_NULL.equals(user.getTags())){
             //直接添加
-            String json = gson.toJson(tagNameList);
-            System.out.println(json);
+             tags = gson.toJson(tagNameList);
+        }else{
+            //todo 某些父标签下的子标签只能选择一种。
+
+            //将获取的标签与标签库中的标签对比，没有的去除
+            Set<String> tagSet = gson.fromJson(user.getTags(),new TypeToken<Set<String>>(){}.getType());
+            List<String> childrenTagName = tagMapper.getAllChildrenTagName();
+            tagNameList = tagNameList.stream().filter(tag -> {
+                if (StringUtils.isBlank(tag)){
+                    return false;
+                }
+                //排除已选择的标签
+                for (String havingTag : tagSet) {
+                    if (havingTag.equals(tag)) {
+                        return false;
+                    }
+                }
+                //比较标签库是否有该标签
+                for (String childrenName : childrenTagName) {
+                    if (childrenName.equals(tag)) {
+                        return true;
+                    }
+                }
+                return false;
+            }).collect(Collectors.toList());
+            if (tagNameList.size() == 0){
+                throw new BusinessException(ErrorCode.PARAMS_ERROR,"请勿重复选择且选择展示标签");
+            }
+            //通过set集合不重复的特性，去除重复的标签名
+             tagSet.addAll(tagNameList);
+             tags = gson.toJson(tagSet);
         }
-        return false;
+
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getId,user.getId())
+                .set(User::getTags,tags);
+        boolean update = this.update(updateWrapper);
+        if (!update){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"标签更新失败");
+        }
+        return true;
+    }
+
+    /**
+     * 删除标签
+     *
+     * @param tagName 标签列表
+     * @param loginUser 当前登录用户
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean userDeleteTags(String tagName, User loginUser) {
+        if (StringUtils.isBlank(tagName)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请选择一个标签");
+        }
+        User user = this.getById(loginUser.getId());
+        if (StringUtils.isBlank(user.getTags()) || UserConstant.TAG_FRIEND_NULL.equals(user.getTags())){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"无标签可删");
+        }else{
+            Gson gson = new Gson();
+            List<String> tagNameList = gson.fromJson(user.getTags(),new TypeToken<List<String>>(){}.getType());
+
+            tagNameList =  tagNameList.stream().filter(tag -> !tagName.equals(tag)).collect(Collectors.toList());
+            String tags = gson.toJson(tagNameList);
+            LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.eq(User::getId,user.getId())
+                    .set(User::getTags,tags);
+            boolean update = this.update(updateWrapper);
+            if (!update){
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR,"删除标签失败");
+            }
+            return true;
+        }
     }
 
 

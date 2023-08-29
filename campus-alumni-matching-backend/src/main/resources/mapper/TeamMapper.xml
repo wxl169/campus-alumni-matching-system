@@ -23,7 +23,7 @@
                     from tb_team t
                      left join tb_user_team ut on t.id = ut.team_id
                      left join tb_user u on ut.user_id = u.id
-                where t.id = #{teamUserListId};
+                where t.id = #{teamUserListId} and t.is_delete = 0 and ut.is_delete = 0 and u.is_delete = 0;
     </select>
 
     <select id="getUserJoinTeamList" resultType="org.wxl.alumniMatching.domain.entity.Team"

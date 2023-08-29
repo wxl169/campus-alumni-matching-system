@@ -494,7 +494,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
     @Override
     public TeamUserListVO getTeamAndUser(Long teamId) {
         LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(teamId != null&&teamId > 0,Team::getId,teamId);
+        queryWrapper.eq(teamId != null && teamId > 0,Team::getId,teamId);
         Team team = this.getOne(queryWrapper);
         TeamUserListVO teamUserListVO = BeanCopyUtils.copyBean(team, TeamUserListVO.class);
         List<UserShowVO> userList = teamMapper.getUserList(teamId);
@@ -535,25 +535,28 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         //用户列表的下标 =》 相似度
         List<Pair<Long,Long>> list = new ArrayList<>();
 
-        List<String> tagListSort;
+        Set<String> tagSetSort;
         for (Long teamId: teamIds) {
             //限制展示用户的list长度
             if (list.size() >= (pageSize * 5)){
                 break;
             }
             //将要计算的标签集合
-            tagListSort = new ArrayList<>();
+            tagSetSort = new HashSet<>();
             Map<String, Integer> userTags = userTeamService.getUserTags(teamId);
-            //筛选出出现次数大于1的标签
+            //筛选出出现次数大于2的标签
             for (Map.Entry<String, Integer> entry : userTags.entrySet()) {
-                if (entry.getValue() >= 1) {
-                    tagListSort.add(entry.getKey());
+                if (entry.getValue() >= 2) {
+                    tagSetSort.add(entry.getKey());
                 }
             }
+
             //如果标签数小于1 则排除当前队伍
-            if (tagListSort.size() < 1){
+            if (tagSetSort.size() < 1){
                 continue;
             }
+
+            List<String> tagListSort= new ArrayList<>(tagSetSort);
             long distance = AlgorithmUtils.minDistance(tagList, tagListSort);
             list.add(new Pair<>(teamId, distance));
         }
@@ -568,7 +571,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
 
         // 原本顺序的 teamId 列表
         List<Long> teamIdList = topTeamPairList.stream().map(Pair::getKey).collect(Collectors.toList());
-
         LambdaQueryWrapper<Team> teamQueryWrapper = new LambdaQueryWrapper<>();
         teamQueryWrapper.in(Team::getId,teamIdList);
         Map<Long, List<TeamUserListVO>> teamIdUserListMap = this.list(teamQueryWrapper)

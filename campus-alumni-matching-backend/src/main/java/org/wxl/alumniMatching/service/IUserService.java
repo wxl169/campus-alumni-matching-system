@@ -183,4 +183,13 @@ public interface IUserService extends IService<User> {
      * @return 是否添加成功
      */
     boolean userAddTags(List<String> tagNameList, User loginUser);
+
+    /**
+     * 删除标签
+     *
+     * @param tagName 标签
+     * @param loginUser 当前登录用户
+     * @return 是否删除成功
+     */
+    boolean userDeleteTags(String tagName, User loginUser);
 }

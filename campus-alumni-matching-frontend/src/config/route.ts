@@ -14,7 +14,10 @@ import TeamUpdatePage from "../pages/team/TeamUpdatePage.vue";
 import ChatRoomPage from "../pages/ChatRoomPage.vue";
 import TeamDetailPage from "../pages/team/TeamDetailPage.vue";
 import UserDetailsPage from "../pages/user/UserDetailsPage.vue"
-
+import Tag from "../pages/tag/TagPage.vue";
+import TeamIntroduce from "../pages/team/TeamIntroduce.vue";
+import MessageHome from "../pages/message/MessageHome.vue";
+import UserChatRoomPage from "../pages/user/UserChatRoomPage.vue";
 
 // 2. 定义一些路由
 const routes = [
@@ -23,6 +26,7 @@ const routes = [
     { path: '/team' , title: '队伍列表', meta:{showBottom: true, showHeader: true, showBack: true,showRight:false}, component: Team },
     { path: '/userTeam', title: '通讯录', meta:{showBottom: true, showHeader: true, showBack: false,showRight:true}, component: UserTeamPage },
     { path: '/user', title: '个人详情', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: User },
+    { path: '/tag', title: '标签页', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: Tag },
     { path: '/search', title: '搜索用户', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: SearchPage },
     { path: '/user/edit', title: '编辑信息',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserEditPage },
     { path: '/user/list', title: '用户列表', meta:{showBottom: true, showHeader: true, showBack: true,showRight:false},component: SearchResultPage },
@@ -30,10 +34,13 @@ const routes = [
     { path: '/user/login', title: '登录账号',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserLoginPage},
     { path: '/user/register', title: '注册账号',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserRegisterPage},
     { path: '/user/details', title: '个人资料',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserDetailsPage},
+    { path: '/user/chatRoom/:id',meta:{showBottom: false, showHeader: false, showBack: false,showRight:false}, component: UserChatRoomPage},
     { path: '/team/add', title: '创建队伍',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: TeamAddPage},
     { path: '/team/update', title: '更新队伍', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false},component: TeamUpdatePage},
     { path: '/team/chatRoom/:id', meta:{showBottom: false, showHeader: false, showBack: false,showRight:false}, component: ChatRoomPage},
     { path: '/team/detail', title:'群聊设置', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: TeamDetailPage},
+    { path: '/team/introduce', title:'群聊介绍', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: TeamIntroduce},
+    { path: '/message', title:'消息列表', meta:{showBottom: true, showHeader: true, showBack: true,showRight:true}, component: MessageHome},
   ]
 
 export default routes;

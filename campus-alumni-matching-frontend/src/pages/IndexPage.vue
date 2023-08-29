@@ -1,6 +1,6 @@
 <template>
 <van-tabs v-model:active="active">
-  <van-tab v-for="index in 2">
+  <van-tab v-for="index in 2">  
     <template #title v-if="index === 1"> 
        <van-icon name="contact" />用户推荐
     </template>
@@ -8,6 +8,7 @@
     <template #title v-if="index === 2"> 
        <van-icon name="friends-o" />队伍推荐
     </template>
+
     <UserCardList :user-list="userList" :loading="loading_user" v-if="index === 1"/>
     <TeamCardList :team-list="teamList" :loading="loading_team" v-if="index === 2"/>
     <!-- <van-empty v-if="(!userList || userList.length < 1) && (!teamList || teamList.length < 1)" description="数据为空"/> -->

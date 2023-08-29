@@ -12,10 +12,10 @@
         <!-- 用户标签 -->
         <van-cell-group :border="false" title="我的标签">
             <van-space :size="5" style="padding: 0 16px" wrap>
-                <van-tag v-for="tag in user.tags" plain size="large" type="primary">
+                <van-tag v-for="tag in user.tags" plain size="large" type="primary" @close="close(tag)" closeable >
                     {{ tag }}
                 </van-tag>
-                <van-tag  size="large" type="primary" @click="$router.push('/account/tags')">
+                <van-tag  size="large" type="primary" @click="$router.push('/tag')">
                     <van-icon name="plus" style="margin-right: 3px" />
                     添加标签
                 </van-tag>
@@ -30,7 +30,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { getCurrentUser } from "../../services/user";
-
+import myAxios from "../../plugins/myAxios";
+import { showFailToast, showSuccessToast } from 'vant';
 
 const user = ref();
 onMounted(async () => {
@@ -39,4 +40,21 @@ onMounted(async () => {
         user.value.tags = JSON.parse(user.value.tags);
     }
 })
+
+const close = async (tag:string) => {
+    const res = await myAxios.delete('/user/delete/tag',{
+        params:{
+            tagName : tag
+        }
+    });
+  if(res.code === 0){
+    user.value = await getCurrentUser();
+    if (user.value.tags) {
+        user.value.tags = JSON.parse(user.value.tags);
+    }
+      showSuccessToast("删除成功");
+  }else{
+    showFailToast("删除标签失败:"+res.description)
+  }
+};
 </script>

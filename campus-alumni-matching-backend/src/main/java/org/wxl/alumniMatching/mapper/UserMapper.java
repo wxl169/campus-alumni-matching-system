@@ -30,4 +30,11 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 匹配用户列表
      */
     List<User> getMatchUsers(Long userId);
+
+    /**
+     * 查询所有用户
+     * @return 所有用户列表
+     */
+    List<User> selectAllUserHavingTag();
+
 }

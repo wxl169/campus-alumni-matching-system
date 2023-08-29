@@ -21,4 +21,10 @@ public interface TagMapper extends BaseMapper<Tag> {
      * @return 展示父标签
      */
     List<Tag> getShowTag();
+
+    /**
+     * 获取所有子标签名
+     * @return 子标签名集合
+     */
+    List<String> getAllChildrenTagName();
 }

@@ -8,23 +8,18 @@
       </van-tag>
     </van-col>
   </van-row>
-
   <van-divider content-position="left">选择标签</van-divider>
   <van-tree-select v-model:active-id="activeIds" v-model:main-active-index="activeIndex" :items="tagList" />
-
-
-  <van-button type="primary" size="large" @click="doSearchResult" style="margin-top: 50px;">搜索</van-button>
+  <van-button type="primary" size="large" @click="userAddTags" style="margin-top: 50px;">添加</van-button>
 </template>
 
-<script setup>
+<script setup langt="ts">
 import { ref,onMounted } from 'vue';
-import { showToast } from 'vant';
-import { useRouter } from 'vue-router';
 import userTagList from "../../constants/userTagList";
 import myAxios from "../../plugins/myAxios";
+import { showSuccessToast, showFailToast } from 'vant';
 
-const router = useRouter();
-
+//列表标签
 let tagList = ref([])
 
 onMounted(async () => {
@@ -36,12 +31,12 @@ onMounted(async () => {
   }
 })
 
+
+
 const show = ref(true);
 const close = () => {
   show.value = false;
 };
-
-
 
 //已选中的标签
 const activeIds = ref([]);
@@ -55,17 +50,18 @@ const doClose = (tag) => {
   })
 }
 
-//执行搜索
-const doSearchResult = () =>{
-  router.push({
-    path:'/user/list',
-    query:{
-      tags: activeIds.value
-    }
-  })
+//添加标签
+const userAddTags = async () => {
+  const res = await myAxios.post('/user/add/tags', {
+      tagNameList : activeIds.value
+  });
+  if(res.data === true){
+    showSuccessToast("添加成功");
+  }else{
+    showFailToast("添加失败:"+res.description)
+  }
+
+  console.log(tagNameList);
 }
 
 </script>
-
-<style scoped>
-</style>
