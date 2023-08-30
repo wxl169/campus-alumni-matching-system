@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    username: root
+    password: wu13145
+    url: jdbc:mysql://127.0.0.1:3306/campus_alumni_matching_system?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+#session 失效时间（分）
+  session:
+    timeout: 86400
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+  address: 0.0.0.0
