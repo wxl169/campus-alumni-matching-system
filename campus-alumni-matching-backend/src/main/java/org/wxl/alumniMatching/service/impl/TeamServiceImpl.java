@@ -324,20 +324,20 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
             }
         }
+
         // 该用户已加入的队伍数量
         long userId = loginUser.getId();
-
         // 只有一个线程能获取到锁
         RLock lock = redissonClient.getLock("alumniMatching:team:joinTeam:lock");
         try {
-            // 抢到锁并执行
+            // 抢到锁并执行 while保证每一个线程都抢到锁，并执行while中的代码
             while (true) {
                 if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
                     System.out.println("getLock: " + Thread.currentThread().getId());
                     LambdaQueryWrapper<UserTeam> userTeamQueryWrapper = new LambdaQueryWrapper<>();
                     userTeamQueryWrapper.eq(UserTeam::getUserId, userId);
                     long hasJoinNum = userTeamService.count(userTeamQueryWrapper);
-                    if (hasJoinNum >= 5) {
+                    if (hasJoinNum >= TeamConstant.TEAM_CREATE_MAX_NUM) {
                         throw new BusinessException(ErrorCode.PARAMS_ERROR, "最多创建和加入 5 个队伍");
                     }
                     // 不能重复加入已加入的队伍
@@ -361,7 +361,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
                     return userTeamService.save(userTeam);
                 }
             }
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             log.error("doCacheRecommendUser error", e);
             return false;
         } finally {
