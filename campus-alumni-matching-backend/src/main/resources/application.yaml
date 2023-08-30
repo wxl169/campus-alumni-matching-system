@@ -42,7 +42,7 @@ mybatis-plus:
 
 #端口号配置
 server:
-  port: 8888
+  port: 8080
   servlet:
     context-path: /api
     session:
