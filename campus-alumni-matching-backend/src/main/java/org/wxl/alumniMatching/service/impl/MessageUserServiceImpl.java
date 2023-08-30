@@ -87,9 +87,9 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
     @Override
     public boolean deleteMessageById(Long friendId, User loginUser) {
         judgeMessage(friendId,loginUser);
-        boolean delete = messageUserMapper.deleteMessageById(friendId,loginUser.getId());
-        if (!delete){
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"清空消息记录失败");
+        int delete = messageUserMapper.deleteMessageById(friendId,loginUser.getId());
+        if (delete == 0){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"无消息可清除");
         }
         return true;
     }

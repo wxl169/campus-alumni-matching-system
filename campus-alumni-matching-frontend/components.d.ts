@@ -19,6 +19,7 @@ declare module 'vue' {
     VanCard: typeof import('vant/es')['Card']
     VanCell: typeof import('vant/es')['Cell']
     VanCellGroup: typeof import('vant/es')['CellGroup']
+    VanChat: typeof import('vant/es')['Chat']
     VanCol: typeof import('vant/es')['Col']
     VanDatePicker: typeof import('vant/es')['DatePicker']
     VanDialog: typeof import('vant/es')['Dialog']

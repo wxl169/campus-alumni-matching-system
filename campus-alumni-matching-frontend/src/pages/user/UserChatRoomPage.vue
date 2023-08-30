@@ -74,7 +74,7 @@ const onClickLeft = () => {
 
 const onClickRight = (userId) => {
     router.push({
-        path: '/user/details',
+        path: '/user/setUp',
         query: {
             userId
         }

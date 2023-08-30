@@ -31,5 +31,5 @@ public interface MessageUserMapper extends BaseMapper<MessageUser> {
      * @param userId 当前登录用户
      * @return 是否清除成功
      */
-    boolean deleteMessageById(Long friendId, Long userId);
+    int deleteMessageById(Long friendId, Long userId);
 }

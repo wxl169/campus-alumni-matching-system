@@ -13,6 +13,25 @@
         <result column="message_show" property="messageShow" />
         <result column="is_delete" property="isDelete" />
     </resultMap>
+    <delete id="deleteMessageById">
+            UPDATE tb_message_user
+            SET is_delete = CASE
+                                WHEN message_show = #{userId} THEN 1
+                                ELSE is_delete
+                END,
+                message_show = CASE
+                                   WHEN message_show = 0 THEN #{friendId}
+                                   WHEN message_show = #{userId} THEN 0
+                                   ELSE message_show
+                    END
+            WHERE (
+                    (send_user_id = #{friendId} AND receive_user_id = #{userId})
+                    OR
+                    (send_user_id = #{userId} AND receive_user_id = #{friendId})
+                )
+              AND (message_show = 0 OR message_show = #{userId})
+              AND is_delete = 0;
+    </delete>
 
     <select id="getMessageById" resultType="org.wxl.alumniMatching.domain.entity.MessageUser">
         select id, content, send_time, send_user_id, receive_user_id
@@ -26,24 +45,5 @@
           and is_delete = 0;
     </select>
 
-    <update id="deleteMessageById">
-        UPDATE tb_message_user
-        SET is_delete = CASE
-                            WHEN message_show = #{userId} THEN 1
-                            ELSE is_delete
-            END,
-            message_show = CASE
-                               WHEN message_show = 0 THEN #{friendId}
-                               WHEN message_show = #{userId} THEN 0
-                               ELSE message_show
-                END
-        WHERE (
-                (send_user_id = #{friendId} AND receive_user_id = #{userId})
-                OR
-                (send_user_id = #{userId} AND receive_user_id = #{friendId})
-            )
-          AND (message_show = 0 OR message_show = #{userId})
-          AND is_delete = 0;
 
-    </update>
 </mapper>
