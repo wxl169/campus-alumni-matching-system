@@ -52,9 +52,6 @@ server:
         same-site: none
 
 
-#自定义图片下载存放路径
-myBlog:
-  path: E:\image\
 
 #OSS秘钥配置
 oss:

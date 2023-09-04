@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 @Api(tags = "上传文件模块")
 @RestController
 //跨域
-@CrossOrigin(origins = {"http://127.0.0.1:5173","http://localhost:8000"},allowCredentials = "true")
+//@CrossOrigin(origins = {"http://127.0.0.1:5173","http://localhost:8000","http://42.193.15.245:8080"},allowCredentials = "true")
 public class UploadController {
 
    @Resource

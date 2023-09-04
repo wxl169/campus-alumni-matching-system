@@ -21,9 +21,9 @@ import java.util.List;
  * @author 16956
  */
 @Api(tags = "用户消息模块")
+//@CrossOrigin(origins = {"http://127.0.0.1:5173","http://localhost:8000","http://42.193.15.245:8080"},allowCredentials = "true")
 @RestController
 @RequestMapping("/message/user")
-@CrossOrigin(origins = {"http://127.0.0.1:5173","http://localhost:8000"},allowCredentials = "true")
 public class MessageUserController {
     @Resource
     private IMessageUserService messageUserService;

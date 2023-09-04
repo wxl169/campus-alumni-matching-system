@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Api(tags = "用户模块")
 @RestController
-@CrossOrigin(origins = {"http://127.0.0.1:5173","http://localhost:8000"},allowCredentials = "true")
+//@CrossOrigin(origins = {"http://127.0.0.1:5173","http://localhost:8000","http://42.193.15.245:8080"},allowCredentials = "true")
 @RequestMapping("/user")
 public class UserController {
     @Resource
