@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.common.ResultUtils;
+import org.wxl.alumniMatching.config.OSSConfig;
 import org.wxl.alumniMatching.domain.dto.*;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.*;
