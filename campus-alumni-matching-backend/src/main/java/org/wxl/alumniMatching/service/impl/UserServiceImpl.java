@@ -26,6 +26,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.wxl.alumniMatching.utils.AlgorithmUtils;
 import org.wxl.alumniMatching.utils.BeanCopyUtils;
+import org.wxl.alumniMatching.utils.RegexUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -67,13 +68,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @param userAccount   用户账户
      * @param userPassword  用户密码
      * @param checkPassword 校验密码
+     * @param phone 手机号
      * @return 新用户 id
      */
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword,String phone) {
         // 1. 校验
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "参数为空");
+        }
+        if (RegexUtils.isPhoneInvalid(phone)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"手机号格式错误");
         }
         //用户账号控制在 5 ~ 10 位
         int userAccountLength = userAccount.length();
@@ -96,12 +101,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (!userPassword.equals(checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"密码和校验码不同");
         }
-        // 账户不能重复
+        // 账户手机号不能重复
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserAccount, userAccount);
+        queryWrapper.eq(User::getUserAccount, userAccount)
+                .or()
+                .eq(User::getPhone,phone);
         long count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复或手机号重复");
         }
         // 2. 加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -110,6 +117,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         user.setUsername("用户"+ userAccount);
         user.setUserAccount(userAccount);
         user.setGender(0);
+        user.setPhone(phone);
         user.setAvatarUrl(UserConstant.USER_DEFAULT_AVATAR);
         user.setUserPassword(encryptPassword);
         String jsonString = "[\"男\"]";
@@ -167,7 +175,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     /**
-     * 用户登录
+     * 管理员登录
      *
      * @param userAccount  用户账户
      * @param userPassword 用户密码
@@ -210,8 +218,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BusinessException(ErrorCode.NOT_LOGIN,"请先登录");
         }
         long userId = currentUser.getId();
-        // TODO 校验用户是否合法
-        User user = userMapper.selectById(userId);
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId,userId)
+                .eq(User::getUserStatus,UserConstant.USER_STATUS_NORMAL)
+                .eq(User::getIsDelete,UserConstant.USER_STATUS_NORMAL);
+        User user = this.getOne(queryWrapper);
+        if (user == null){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"暂不存在该用户");
+        }
         return BeanCopyUtils.copyBean(user, UserCurrentVO.class);
     }
 
@@ -794,6 +808,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
+    /**
+     * 用户发送短信
+     * @param phone 用户手机号码
+     * @param request 信息
+     * @return 是否发送成功
+     */
+    @Override
+    public boolean userSendMessageCode(String phone, HttpServletRequest request) {
+        //1.检验手机号码
+        if (RegexUtils.isPhoneInvalid(phone)){
+            //无效手机号码
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"手机号码无效");
+        }
+        //2.符合，生产验证码
+        
+        return false;
+    }
+
 
     /**
      * 是否为管理员
@@ -872,7 +904,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "个人简介请控制在0~50位");
             }
         }
-
     }
 
     /**

@@ -10,6 +10,11 @@ public class UserRegisterDTO {
     private String userAccount;
 
     /**
+     * 手机号
+     */
+    private String phone;
+
+    /**
      * 用户密码
      */
     private String userPassword;

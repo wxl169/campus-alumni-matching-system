@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * redisson实现分布式锁
  *
- */
+         */
 @Configuration
 @ConfigurationProperties(prefix = "spring.redis")
 @Data

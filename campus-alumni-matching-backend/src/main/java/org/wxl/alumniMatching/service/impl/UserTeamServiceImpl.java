@@ -67,7 +67,9 @@ private UserTeamMapper userTeamMapper;
         List<String> tags = userTeamMapper.getUserTags(teamId);
         Gson gson = new Gson();
         Map<String, Integer> map = new HashMap<>(32);
-
+        if (tags.size() < 1 ){
+            return null;
+        }
         //按出现次数排列
         tags.forEach(tag->{
             List<String> tagList = gson.fromJson(tag, new TypeToken<List<String>>() {}.getType());

@@ -15,6 +15,7 @@ import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.*;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.IUserService;
+import org.wxl.alumniMatching.utils.RegexUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -46,12 +47,16 @@ public class UserController {
         }
         String userAccount = userRegisterDto.getUserAccount();
         String userPassword = userRegisterDto.getUserPassword();
+        String phone = userRegisterDto.getPhone();
         String checkPassword = userRegisterDto.getCheckPassword();
 
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数为空");
         }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        if (RegexUtils.isPhoneInvalid(phone)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"手机号格式错误");
+        }
+        long result = userService.userRegister(userAccount, userPassword, checkPassword,phone);
         if (result > 0){
            return ResultUtils.success(true);
         }
@@ -102,6 +107,34 @@ public class UserController {
         return ResultUtils.success(userLoginVO);
     }
 
+    /**
+     * TODO 用户发送短信
+     * @param phone 用户手机号码
+     * @param request 信息
+     * @return 是否发送成功
+     */
+    @ApiOperation(value = "发送短信")
+    @PostMapping("/send/code")
+    public BaseResponse<Boolean> userSendMessageCode(@RequestParam("phone") String phone, HttpServletRequest request) {
+        if (RegexUtils.isPhoneInvalid(phone)){
+            //无效手机号码
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"手机号码无效");
+        }
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR,"暂不支持发送短信");
+//        return ResultUtils.success(userService.userSendMessageCode(phone,request));
+    }
+
+    /**
+     * TODO 用户通过手机号登录
+     * @param messageCodeDTO  手机号和验证码
+     * @return 用户信息
+     */
+    @ApiOperation(value = "手机号登录")
+    @PostMapping("/login/phone")
+    public BaseResponse<UserLoginVO> userLoginByMessageCode(@RequestBody UserMessageCodeDTO messageCodeDTO, HttpServletRequest request) {
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR,"暂不支持手机号登录");
+//        return ResultUtils.success(null);
+    }
 
     /**
      * 用户注销

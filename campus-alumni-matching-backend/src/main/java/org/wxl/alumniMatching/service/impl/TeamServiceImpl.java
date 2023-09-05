@@ -358,6 +358,8 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
                     userTeam.setUserId(userId);
                     userTeam.setTeamId(teamId);
                     userTeam.setJoinTime(LocalDateTime.now());
+
+
                     return userTeamService.save(userTeam);
                 }
             }
@@ -544,11 +546,14 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
             }
             //将要计算的标签集合
             tagSetSort = new HashSet<>();
+
             Map<String, Integer> userTags = userTeamService.getUserTags(teamId);
-            //筛选出出现次数大于2的标签
-            for (Map.Entry<String, Integer> entry : userTags.entrySet()) {
-                if (entry.getValue() >= 2) {
-                    tagSetSort.add(entry.getKey());
+            if (userTags != null){
+                //筛选出出现次数大于2的标签
+                for (Map.Entry<String, Integer> entry : userTags.entrySet()) {
+                    if (entry.getValue() >= 2) {
+                        tagSetSort.add(entry.getKey());
+                    }
                 }
             }
 
@@ -573,7 +578,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         // 原本顺序的 teamId 列表
         List<Long> teamIdList = topTeamPairList.stream().map(Pair::getKey).collect(Collectors.toList());
         LambdaQueryWrapper<Team> teamQueryWrapper = new LambdaQueryWrapper<>();
-        teamQueryWrapper.in(Team::getId,teamIdList);
+        teamQueryWrapper.in(teamIdList.size() > 0,Team::getId,teamIdList);
         Map<Long, List<TeamUserListVO>> teamIdUserListMap = this.list(teamQueryWrapper)
                 .stream()
                 .map(team -> BeanCopyUtils.copyBean(team,TeamUserListVO.class))

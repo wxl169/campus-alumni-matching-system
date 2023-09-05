@@ -26,9 +26,10 @@ public interface IUserService extends IService<User> {
      * @param userAccount   用户账户
      * @param userPassword  用户密码
      * @param checkPassword 校验密码
+     * @param phone 手机号
      * @return 新用户 id
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword);
+    long userRegister(String userAccount, String userPassword, String checkPassword,String phone);
 
     /**
      * 用户登录
@@ -192,4 +193,11 @@ public interface IUserService extends IService<User> {
      * @return 是否删除成功
      */
     boolean userDeleteTags(String tagName, User loginUser);
+    /**
+     * 用户发送邮件
+     * @param phone 用户手机号码
+     * @param request 信息
+     * @return 是否发送成功
+     */
+    boolean userSendMessageCode(String phone, HttpServletRequest request);
 }
