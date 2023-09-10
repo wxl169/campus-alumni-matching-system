@@ -1,7 +1,9 @@
 package org.wxl.alumniMatching.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.wxl.alumniMatching.common.ErrorCode;
+import org.wxl.alumniMatching.contant.MessageConstant;
 import org.wxl.alumniMatching.domain.dto.SendMessageDTO;
 import org.wxl.alumniMatching.domain.entity.MessageUser;
 import org.wxl.alumniMatching.domain.entity.User;
@@ -16,7 +18,9 @@ import org.wxl.alumniMatching.utils.BeanCopyUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -38,7 +42,7 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
         if (sendMessageDTO == null){
             throw new BusinessException(ErrorCode.NULL_ERROR,"请求数据为空");
         }
-        if (StringUtils.isBlank(sendMessageDTO.getMessage())){
+        if (StringUtils.isBlank(sendMessageDTO.getContent())){
             throw new BusinessException(ErrorCode.NULL_ERROR,"请输入内容");
         }
         if (sendMessageDTO.getToUserId() == null || sendMessageDTO.getToUserId() <= 0){
@@ -47,7 +51,7 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
         judgeMessage(sendMessageDTO.getToUserId(),loginUser);
         MessageUser messageUser = new MessageUser();
         //将信息保存数据库
-        messageUser.setContent(sendMessageDTO.getMessage());
+        messageUser.setContent(sendMessageDTO.getContent());
         messageUser.setSendUserId(loginUser.getId());
         messageUser.setReceiveUserId(sendMessageDTO.getToUserId());
         messageUser.setStatus(0);
@@ -81,11 +85,40 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
 
     @Override
     public List<MessageUserVO> getRecentMessage(Long friendId, User loginUser) {
+        judgeMessage(friendId,loginUser);
+        //查看最近的消息记录
+        List<MessageUser> messageUserList = messageUserMapper.selectRecentMessage(friendId,loginUser.getId());
+        //将消息脱敏
+        List<MessageUserVO> messageUserVOList = BeanCopyUtils.copyBeanList(messageUserList, MessageUserVO.class);
 
-        return null;
+        //未读消息的id列表
+        Set<Long> messageIdSet = new HashSet<>();
+        //获取未读消息的id
+        for (MessageUser messageUser:messageUserList) {
+            if (messageUser.getStatus() == MessageConstant.NOT_READ_MESSAGE){
+                messageIdSet.add(messageUser.getId());
+            }
+        }
+        //修改未读消息的状态为已读
+        if (messageIdSet.size() > 0){
+            LambdaUpdateWrapper<MessageUser> updateWrapper = new LambdaUpdateWrapper<>();
+            updateWrapper.set(MessageUser::getStatus,MessageConstant.READ_MESSAGE)
+                    .in(MessageUser::getId,messageIdSet);
+            this.update(updateWrapper);
+        }
+
+        return messageUserVOList;
     }
 
-
+    @Override
+    public void updateMessageStatus(Long friendId, User loginUser) {
+        judgeMessage(friendId,loginUser);
+        //将对方发给自己的信息标识为已读
+       boolean judge =  messageUserMapper.updateMessageStatus(friendId,loginUser.getId(),LocalDateTime.now());
+       if (!judge){
+           log.error("将对方发送给当前用户的信息标识为已读出错");
+       }
+    }
 
 
     /**

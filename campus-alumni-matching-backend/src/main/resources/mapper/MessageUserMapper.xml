@@ -14,6 +14,21 @@
         <result column="is_system" property="isSystem" />
         <result column="is_delete" property="isDelete" />
     </resultMap>
+    <update id="updateMessageStatus">
+        update tb_message_user
+            set status = 1
+         where
+             send_user_id = #{friendId}
+        and
+            receive_user_id = #{userId}
+        and
+             is_delete = 0
+        and
+             is_system = 0
+        and
+             send_time &lt; #{now}
+    </update>
+
     <delete id="deleteMessageById">
             UPDATE tb_message_user
             SET is_delete = CASE
@@ -37,15 +52,33 @@
 
     <select id="getMessageById" resultType="org.wxl.alumniMatching.domain.entity.MessageUser">
         select id, content, send_time, send_user_id, receive_user_id
-        from tb_message_user
-        where (
+            from tb_message_user
+        where
+            (
                 (send_user_id = #{friendId} and receive_user_id = #{userId})
                 or
                 (send_user_id = #{userId} and receive_user_id = #{friendId})
             )
           and (message_show = 0 or message_show = #{userId})
           and is_system = 0
-          and is_delete = 0;
+          and is_delete = 0
+          order by send_time asc;
+    </select>
+
+
+    <select id="selectRecentMessage" resultType="org.wxl.alumniMatching.domain.entity.MessageUser">
+        select id,content,send_time,send_user_id,receive_user_id,`status`
+            from tb_message_user
+        where
+            (
+                    (send_user_id = #{friendId} and receive_user_id = #{userId})
+                    or
+                    (send_user_id = #{userId} and receive_user_id = #{friendId})
+            )
+        and (message_show = 0 or message_show = #{userId})
+        and is_system = 0
+        and is_delete = 0
+        order by send_time asc;
     </select>
 
 

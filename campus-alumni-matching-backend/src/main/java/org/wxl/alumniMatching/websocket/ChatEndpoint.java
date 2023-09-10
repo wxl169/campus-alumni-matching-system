@@ -122,18 +122,24 @@ public class ChatEndpoint {
             if (messageDTO.getToUserId() == null || messageDTO.getToUserId() <= 0){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR,"请选择接收人");
             }
-            if (StringUtils.isBlank(messageDTO.getMessage())){
+            if (StringUtils.isBlank(messageDTO.getContent())){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR,"请输入内容");
             }
 
             //获取要将数据发送的用户
             Long toUserId = messageDTO.getToUserId();
             //获取消息数据
-            String data = messageDTO.getMessage();
+            String data = messageDTO.getContent();
             //获取当前登录用户
             User user = (User)httpSession.getAttribute(UserConstant.USER_LOGIN_STATE);
             //获取推送给指定用户的消息格式的数据
-            String resultMessage = MessageUtils.getMessage(MessageConstant.NOT_SYSTEM_MESSAGE, user.getId(), data);
+            String resultMessage = MessageUtils.getMessage(MessageConstant.NOT_SYSTEM_MESSAGE, toUserId, data);
+
+            //将消息保存在数据库中
+            boolean sendMessage = messageUserService.sendMessage(messageDTO, user);
+            if (!sendMessage){
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR,"发送消息失败");
+            }
 
             //如果发送消息对象没有在线
             if (ONLINE_USERS.get(toUserId) == null){
@@ -142,12 +148,6 @@ public class ChatEndpoint {
             }else{
                 //发送消息对象在线
                 ONLINE_USERS.get(toUserId).getBasicRemote().sendText(resultMessage);
-            }
-
-            //将消息保存在数据库中
-            boolean sendMessage = messageUserService.sendMessage(messageDTO, user);
-            if (!sendMessage){
-                throw new BusinessException(ErrorCode.SYSTEM_ERROR,"发送消息失败");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);

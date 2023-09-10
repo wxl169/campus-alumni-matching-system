@@ -11,35 +11,37 @@
             </div>
         </div>
 
-        <!-- <div class="content_box" id="box" ref="scrollBox">
-            <div :class="item.position === 'left' ? 'userbox2' : 'userbox'" v-for="(item, index) in chatList" :key="index">
-                <div :class="item.position === 'left' ? 'nameInfo2' : 'nameInfo'">
-                    <div style="font-size: 13px">{{ item.userName }}
+        <div class="content_box"  v-for="message in messages" >
+            <div class="userbox2" v-if="message.receiveUserId === id">
+                <div class="nameInfo2">
+                    <div style="font-size: 13px">
+                        {{userName}}
                     </div>
-                    <div :class="item.position === 'left' ? 'contentText2' : 'contentText'">
-                        {{ item.content }}
+                    <div class="contentText2">
+                        {{ message.content }}
                     </div>
                 </div>
                 <div>
-                    <van-image style="z-index: 1" width="40px" height="40px" :src="item.avatarUrl" />
+                    <van-image style="z-index: 1" width="40px" height="40px" :src="friendAvatarUrl" />
+                </div>
+            </div>
+
+            <div class="userbox" v-else>
+                <div class="nameInfo">
+                    <div style="font-size: 13px">
+                        {{username}}
+                    </div>
+                    <div class="contentText">
+                        {{ message.content }}
+                    </div>
+                </div>
+                <div>
+                    <van-image style="z-index: 1" width="40px" height="40px" :src="currentUser.avatarUrl" />
                 </div>
             </div>
         </div>
         
-        <div class="bottom">
-            <van-field v-model="inputMessage" center type="textarea" :autosize="{ maxHeight: 100, minHeight: 25 }"
-                placeholder="请输入内容" rows="1">
-                <template #button>
-                    <van-button size="small" type="primary" @keyup.enter="sendMessage">发送</van-button>
-                </template>
-            </van-field>
-        </div>
-    </div> -->
-        <div v-for="message in messages" :key="message.id">
-            <div v-if="message.receiveUserId === currentUser.id" class="left">{{userName}}:{{ message.message }} </div>
-            <div v-else class="right"> {{currentUser.username}}:{{ message.message }} </div>
-        </div>
-        <div class="bottom"> 
+        <div class="bottom" style="margin-top: 20px;"> 
             <van-field v-model="inputMessage" center type="textarea"
                 :autosize="{ maxHeight: 100, minHeight: 25 }" placeholder="请输入内容" rows="1">
                 <template #button> 
@@ -66,15 +68,19 @@ const userById = ref();
 const userId = route.params.id
 // 当前用户信息
 const currentUser = ref(null);
-
-
+const friendAvatarUrl  = ref("");
+const id = ref(0);
+const username = ref("")
 onMounted(async () => {
     //当前登录信息
     currentUser.value = await getCurrentUser();
+    id.value = currentUser.value.id
+    username.value = currentUser.value.username
     //好友信息
     userById.value = await getUserDetail(userId);
     //好友用户名
     userName.value = userById.value.username;
+    friendAvatarUrl.value = userById.value.avatarUrl;
 })
 
 /**
@@ -85,15 +91,29 @@ const inputMessage = ref('');
 
 const websocket = new WebSocket('ws://localhost:8080/api/message'); // 替换为你的WebSocket服务器地址
 
-websocket.onmessage = (event) => {
+/**
+ * 
+ * @param event 接收对方发送的消息
+ */
+websocket.onmessage = async (event) => {
     const message = JSON.parse(event.data);
-    messages.value.push(message);
+   
+    messages.value.push(message); 
+    //将消息设置为已读
+    await myAxios({
+        url: '/message/user/update/messageStatus',
+        method: "put",
+        params: {
+          friendId: userId
+        },
+      });
 };
+
 
 const sendMessage = () => {
     const newMessage = {
         toUserId: userId,
-        message: inputMessage.value,
+        content: inputMessage.value,
     };
     messages.value.push(newMessage); // 将消息添加到当前用户的消息列表中
     websocket.send(JSON.stringify(newMessage));
@@ -108,14 +128,14 @@ onMounted(async () => {
      * 展示历史信息
      */
       const res = await myAxios({
-        url: '/user/delete/friend',
-        method: "delete",
+        url: '/message/user/get/recently',
+        method: "get",
         params: {
-          friendId: friendId
+          friendId: userId
         },
       });
       if (res?.code === 0) {
-        user.value.isFriend = 0;
+        messages.value = res.data
       } else {
         showFailToast((res.description ? `${res.description}` : ''));
       }
@@ -148,16 +168,6 @@ const onClickRight = (userId) => {
     });
 };
 
-// const setScrollPageSize = () => {
-//     // 设置滚动条位置
-//     setTimeout(() => {
-//         window.scrollTo({
-//             left: 0,
-//             top: document.scrollingElement.scrollHeight
-//         });
-//         console.log(document.scrollingElement.scrollHeight)
-//     }, 200); // 注意这里需要延迟20ms正好可以获取到更新后的dom节点
-// }
 </script>
     
     
@@ -166,7 +176,7 @@ const onClickRight = (userId) => {
     
     
     
-<style>
+<style scoped>
 .wrap {
     width: 100%;
     background-color: #f5f5f5;
@@ -195,7 +205,6 @@ const onClickRight = (userId) => {
 }
 
 .content_box {
-    margin-top: 40px;
     background-color: #f5f5f5;
     /*
         中间栏计算高度，110是包含了上下固定的两个元素高度90
@@ -204,7 +213,6 @@ const onClickRight = (userId) => {
         */
     overflow-x: hidden;
     overflow-y: auto;
-    padding: 10px 10px 50px 10px;
     z-index: -1;
 }
 
@@ -284,4 +292,5 @@ const onClickRight = (userId) => {
     margin-top: 3px;
     font-size: 14px;
 }
+
 </style>

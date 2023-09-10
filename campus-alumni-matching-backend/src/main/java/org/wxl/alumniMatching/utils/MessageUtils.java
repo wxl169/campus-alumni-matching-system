@@ -19,9 +19,9 @@ public class MessageUtils {
     public static  String getMessage(Integer isSysteamMessage,Long fromUserId,Object message){
         MessageVO messageVO = new MessageVO();
         messageVO.setIsSystem(isSysteamMessage);
-        messageVO.setMessage(message);
+        messageVO.setContent(message);
         if (fromUserId!=null && fromUserId > 0){
-            messageVO.setFromUserId(fromUserId);
+            messageVO.setReceiveUserId(fromUserId);
         }
         //把字符串转成json格式的字符串
         Gson gson = new Gson();

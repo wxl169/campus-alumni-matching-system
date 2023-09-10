@@ -13,4 +13,15 @@ public interface MessageConstant {
      * 系统消息
      */
     int SYSTEM_MESSAGE = 1;
+
+    /**
+     * 已读消息
+     */
+    int READ_MESSAGE = 1;
+    /**
+     * 未读消息
+     */
+    int NOT_READ_MESSAGE = 0;
+
+
 }

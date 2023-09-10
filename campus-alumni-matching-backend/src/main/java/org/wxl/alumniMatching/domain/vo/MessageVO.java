@@ -17,6 +17,6 @@ public class MessageVO implements Serializable {
     /**
      * 若为系统消息则为null,不然则为发送给的用户用户名
      */
-    private Long fromUserId;
-    private Object message;
+    private Long receiveUserId;
+    private Object content;
 }

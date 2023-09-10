@@ -52,4 +52,12 @@ public interface IMessageUserService extends IService<MessageUser> {
      * @return 最新消息列表
      */
     List<MessageUserVO> getRecentMessage(Long friendId, User loginUser);
+    /**
+     * 修改信息的状态
+     *
+     * @param friendId 好友id
+     * @param loginUser 当前登录用户
+     * @return 修改是否成功
+     */
+    void updateMessageStatus(Long friendId, User loginUser);
 }

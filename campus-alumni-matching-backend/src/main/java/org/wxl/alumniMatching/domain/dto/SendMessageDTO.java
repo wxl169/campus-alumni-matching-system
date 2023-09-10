@@ -18,6 +18,6 @@ public class SendMessageDTO implements Serializable {
     /**
      * 消息
      */
-    private String message;
+    private String content;
 
 }

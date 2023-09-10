@@ -66,7 +66,7 @@ public class MessageUserController {
      * @return 最新消息列表
      */
     @ApiOperation("查看最近聊天记录")
-    @PutMapping("/get/recently")
+    @GetMapping("/get/recently")
     public BaseResponse<List<MessageUserVO>> selectFriendMessage(Long friendId, HttpServletRequest request){
         judgeFriendId(friendId);
         User loginUser = userService.getLoginUser(request);
@@ -74,8 +74,21 @@ public class MessageUserController {
     }
 
 
-
-
+    /**
+     * 修改信息的状态
+     *
+     * @param friendId 好友id
+     * @param request 当前登录用户
+     * @return 修改是否成功
+     */
+    @ApiOperation("修改信息的状态")
+    @PutMapping("/update/messageStatus")
+    public BaseResponse<Boolean> updateMessageStatus(Long friendId, HttpServletRequest request){
+        judgeFriendId(friendId);
+        User loginUser = userService.getLoginUser(request);
+        messageUserService.updateMessageStatus(friendId,loginUser);
+        return ResultUtils.success(true);
+    }
 
 
 

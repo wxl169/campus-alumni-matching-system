@@ -2,7 +2,9 @@ package org.wxl.alumniMatching.mapper;
 
 import org.wxl.alumniMatching.domain.entity.MessageUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.wxl.alumniMatching.domain.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -32,4 +34,22 @@ public interface MessageUserMapper extends BaseMapper<MessageUser> {
      * @return 是否清除成功
      */
     int deleteMessageById(Long friendId, Long userId);
+
+    /**
+     * 查看用户之间最近的聊天记录
+     *
+     * @param friendId 好友id
+     * @param userId 当前用户id
+     * @return 最近消息列表
+     */
+    List<MessageUser> selectRecentMessage(Long friendId, Long userId);
+    /**
+     * 修改信息的状态
+     *
+     * @param friendId 好友id
+     * @param userId 当前登录用户
+     * @param now 当前时间
+     * @return 修改是否成功
+     */
+    boolean updateMessageStatus(Long friendId, Long userId, LocalDateTime now);
 }
