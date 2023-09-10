@@ -27,10 +27,7 @@ import java.util.stream.Collectors;
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements ITagService {
     @Resource
     private TagMapper tagMapper;
-    /**
-     * 展示所有标签
-     * @return 展示所有标签数据
-     */
+
     @Override
     public List<TagShowVO> tagShow() {
         List<Tag> showTag = tagMapper.getShowTag();

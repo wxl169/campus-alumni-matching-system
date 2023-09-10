@@ -62,15 +62,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      */
     private static final String SALT = "wxl";
 
-    /**
-     * 用户注册
-     *
-     * @param userAccount   用户账户
-     * @param userPassword  用户密码
-     * @param checkPassword 校验密码
-     * @param phone 手机号
-     * @return 新用户 id
-     */
+
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword,String phone) {
         // 1. 校验
@@ -129,14 +121,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return user.getId();
     }
 
-    /**
-     * 用户登录
-     *
-     * @param userAccount  用户账户
-     * @param userPassword 用户密码
-     * @param request 当前登录账号信息
-     * @return 脱敏后的用户信息
-     */
+
     @Override
     public UserLoginVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1. 校验
@@ -174,14 +159,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userLoginVo;
     }
 
-    /**
-     * 管理员登录
-     *
-     * @param userAccount  用户账户
-     * @param userPassword 用户密码
-     * @param request 获取当前登录用户信息
-     * @return 脱敏后的用户信息
-     */
+
     @Override
     public UserLoginVO userAdminLogin(String userAccount, String userPassword, HttpServletRequest request) {
         UserLoginVO userLogin = this.userLogin(userAccount, userPassword, request);
@@ -192,11 +170,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userLogin;
     }
 
-    /**
-     * 用户注销
-     *
-     * @param request 获取当前登录用户信息
-     */
+
     @Override
     public int userLogout(HttpServletRequest request) {
         // 移除登录态
@@ -204,12 +178,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return 1;
     }
 
-    /**
-     * 获取当前用户
-     *
-     * @param request 获取当前登录用户信息
-     * @return 返回当前用户信息
-     */
+
     @Override
     public UserCurrentVO getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
@@ -229,14 +198,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return BeanCopyUtils.copyBean(user, UserCurrentVO.class);
     }
 
-    /**
-     * 根据条件分页查询用户列表信息
-     *
-     * @param pageNum 当前页码
-     * @param pageSize 每页大小
-     * @param userListDto 查询条件
-     * @return 每页的用户数据
-     */
+
     @Override
     public PageVO searchUserList(Integer pageNum, Integer pageSize, UserListDTO userListDto, HttpServletRequest request) {
         if (!isAdmin(request)){
@@ -266,13 +228,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     //-------------------------------------------- 用户页  ---------------------------------------------------------
 
-    /**
-     * 根据标签搜索用户
-     * @param pageNum 页面
-     * @param pageSize 每页数据量
-     * @param tagNameList 用户要拥有的标签
-     * @return 所有用户信息列表
-     */
+
     @Override
     public PageVO searchUserByTags(Integer pageNum,Integer pageSize,List<String> tagNameList){
         if (pageNum == null){
@@ -351,11 +307,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return pageVO;
     }
 
-    /**
-     * 返回所有用户
-     *
-     * @return 所有用户信息列表
-     */
+
     @Override
     public PageVO searchUserList(Integer pageNum,Integer pageSize) {
         if (pageNum == null){
@@ -374,13 +326,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 
 
-    /**
-     * 修改用户信息
-     *
-     * @param userUpdateDTO 修改的数据
-     * @param loginUser 当前登录用户的信息
-     * @return 成功 —— 1，失败 —— -1
-     */
+
     @Override
     public int updateUser(UserUpdateDTO userUpdateDTO, User loginUser) {
         if (userUpdateDTO == null){
@@ -450,11 +396,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userMapper.updateByUserUpdateDTO(userUpdateDTO);
     }
 
-    /**
-     * 主页推荐用户信息列表
-     *
-     * @return 主页推荐用户的信息列表
-     */
+
     @Override
     public PageVO getRecommendUser(Integer pageNum,Integer pageSize, HttpServletRequest request) {
         if (pageNum == null){
@@ -572,17 +514,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     }
 
-    /**
-     * 添加好友
-     *
-     * @param friendId 好友id
-     * @param loginUser 当前登录用户信息
-     * @return 返回是否添加成功
-     */
+
     @Override
     public boolean addFriend(Long friendId, User loginUser) {
-        if (friendId == null || friendId <=0 || friendId.equals(loginUser.getId()) ){
+        if (friendId == null || friendId <=0){
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数错误");
+        }
+        if(friendId.equals(loginUser.getId())){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"不能关注自己");
         }
         // 只有一个线程能获取到锁
         RLock lock = redissonClient.getLock("alumniMatching:user:addFriend:lock");
@@ -630,12 +569,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
-    /**
-     * 关注的好友信息
-     *
-     * @param loginUser 用户信息
-     * @return 返回关注的好友列表
-     */
+
     @Override
     public List<UserTagVO> getFriendList(User loginUser) {
         if (loginUser == null){
@@ -652,13 +586,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return BeanCopyUtils.copyBeanList(users,UserTagVO.class);
     }
 
-    /**
-     * 根据id获取用户信息
-     *
-     * @param userId 获取信息的用户id
-     * @param loginUser 获取当前信息
-     * @return 获取用户的信息
-     */
+
     @Override
     public UserDetailVO getUserDetailById(Long userId, User loginUser) {
         if (userId == null || userId <= 0){
@@ -680,13 +608,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return userDetailVO;
     }
 
-    /**
-     * 取消好友关注
-     *
-     * @param friendId 好友id
-     * @param loginUser 当前用户信息
-     * @return 是否取消成功
-     */
+
     @Override
     public boolean unfollowById(Long friendId, User loginUser) {
         if (friendId == null || friendId <=0){
@@ -715,13 +637,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return true;
     }
 
-    /**
-     * 添加标签
-     *
-     * @param tagNameList 标签列表
-     * @param loginUser 当前登录用户
-     * @return 是否添加成功
-     */
+
     @Override
     public boolean userAddTags(List<String> tagNameList, User loginUser) {
         if (tagNameList == null || tagNameList.size() == 0){
@@ -776,13 +692,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return true;
     }
 
-    /**
-     * 删除标签
-     *
-     * @param tagName 标签列表
-     * @param loginUser 当前登录用户
-     * @return 是否删除成功
-     */
+
     @Override
     public boolean userDeleteTags(String tagName, User loginUser) {
         if (StringUtils.isBlank(tagName)){
@@ -808,12 +718,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
     }
 
-    /**
-     * 用户发送短信
-     * @param phone 用户手机号码
-     * @param request 信息
-     * @return 是否发送成功
-     */
+
     @Override
     public boolean userSendMessageCode(String phone, HttpServletRequest request) {
         //1.检验手机号码
@@ -827,12 +732,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
 
-    /**
-     * 是否为管理员
-     *
-     * @param request 获取当前登录用户信息
-     * @return 返回是否是管理员
-     */
     @Override
     public boolean isAdmin(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
@@ -847,14 +746,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
 
 
-
-
-    /**
-     * 获取当前登录用户信息
-     *
-     * @param request 获取当前登录用户信息
-     * @return 返回登录用户信息
-     */
     @Override
     public User getLoginUser(HttpServletRequest request) {
         if (request == null){

@@ -11,6 +11,7 @@
         <result column="send_user_id" property="sendUserId" />
         <result column="receive_user_id" property="receiveUserId" />
         <result column="message_show" property="messageShow" />
+        <result column="is_system" property="isSystem" />
         <result column="is_delete" property="isDelete" />
     </resultMap>
     <delete id="deleteMessageById">
@@ -30,6 +31,7 @@
                     (send_user_id = #{userId} AND receive_user_id = #{friendId})
                 )
               AND (message_show = 0 OR message_show = #{userId})
+              AND is_system = 0
               AND is_delete = 0;
     </delete>
 
@@ -42,6 +44,7 @@
                 (send_user_id = #{userId} and receive_user_id = #{friendId})
             )
           and (message_show = 0 or message_show = #{userId})
+          and is_system = 0
           and is_delete = 0;
     </select>
 

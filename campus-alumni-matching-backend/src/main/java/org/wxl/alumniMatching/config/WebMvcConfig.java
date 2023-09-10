@@ -5,12 +5,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.annotation.Resource;
+
 /**
  * 跨域配置
  * @author 16956
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
+
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {

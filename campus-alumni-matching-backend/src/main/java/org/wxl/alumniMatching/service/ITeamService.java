@@ -12,6 +12,7 @@ import org.wxl.alumniMatching.domain.vo.PageVO;
 import org.wxl.alumniMatching.domain.vo.TeamUserListVO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -47,6 +48,13 @@ public interface ITeamService extends IService<Team> {
      * @return 判断是否删除成功
      */
     boolean deleteTeam(long teamId, User loginUser);
+
+    /**
+     * 过期队伍删除
+     * @param teamIdList 过期队伍id集合
+     * @return 是否删除成功
+     */
+    boolean deleteTeamByList(Set<Long> teamIdList);
 
     /**
      * 分页获取队伍信息

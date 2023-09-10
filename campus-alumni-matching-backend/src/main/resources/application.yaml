@@ -1,7 +1,7 @@
 spring:
   datasource:
-    username: 
-    password: 
+    username: root
+    password: wu13145
     url: jdbc:mysql://127.0.0.1:3306/campus_alumni_matching_system?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
   web:
@@ -50,13 +50,4 @@ server:
         comment: localhost
         secure: true
         same-site: none
-
-
-
-#OSS秘钥配置
-oss:
-  accessKey: 
-  secretKey: 
-  bucket: 
-  cdnTest: 
 

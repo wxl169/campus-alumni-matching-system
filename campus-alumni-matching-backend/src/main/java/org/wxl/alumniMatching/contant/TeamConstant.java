@@ -54,4 +54,13 @@ public interface TeamConstant {
      */
     int TEAM_CREATE_MAX_NUM = 5;
 
+    //  --------------------- 过期时间 ----------------------------
+    /**
+     * 当天过期
+     */
+    int TEAM_MIN_EXPIRED_TIME = 0;
+    /**
+     * 队伍过期预提醒时间
+     */
+    int TEAM_MAX_EXPIRED_TIME = 7;
 }

@@ -26,7 +26,7 @@ export default {
   },
   pre: {
     '/api/': {
-      target: 'your pre url',
+      target: 'http://http://42.193.15.245:8081/api',
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },

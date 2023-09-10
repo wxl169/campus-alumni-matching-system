@@ -11,7 +11,7 @@
             </div>
         </div>
 
-        <div class="content_box" id="box" ref="scrollBox">
+        <!-- <div class="content_box" id="box" ref="scrollBox">
             <div :class="item.position === 'left' ? 'userbox2' : 'userbox'" v-for="(item, index) in chatList" :key="index">
                 <div :class="item.position === 'left' ? 'nameInfo2' : 'nameInfo'">
                     <div style="font-size: 13px">{{ item.userName }}
@@ -25,41 +25,108 @@
                 </div>
             </div>
         </div>
+        
         <div class="bottom">
-            <!--            TODO 消息小尖角未实现-->
-            <van-field v-model="message" center type="textarea" :autosize="{ maxHeight: 100, minHeight: 25 }"
+            <van-field v-model="inputMessage" center type="textarea" :autosize="{ maxHeight: 100, minHeight: 25 }"
                 placeholder="请输入内容" rows="1">
                 <template #button>
-                    <van-button size="small" type="primary" @click="sendMessage">发送</van-button>
+                    <van-button size="small" type="primary" @keyup.enter="sendMessage">发送</van-button>
                 </template>
+            </van-field>
+        </div>
+    </div> -->
+        <div v-for="message in messages" :key="message.id">
+            <div v-if="message.receiveUserId === currentUser.id" class="left">{{userName}}:{{ message.message }} </div>
+            <div v-else class="right"> {{currentUser.username}}:{{ message.message }} </div>
+        </div>
+        <div class="bottom"> 
+            <van-field v-model="inputMessage" center type="textarea"
+                :autosize="{ maxHeight: 100, minHeight: 25 }" placeholder="请输入内容" rows="1">
+                <template #button> 
+                    <van-button size="small" type="primary" @click="sendMessage">发送</van-button> 
+                    </template>
             </van-field>
         </div>
     </div>
 </template>
     
-<script setup>
+<script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import { getCurrentUser, getUserDetail } from "../../services/user";
-import { computed, onBeforeUpdate, onMounted, onUpdated, ref } from "vue";
-
+import { computed, onMounted, ref } from "vue";
+import { showFailToast } from 'vant';
+import myAxios from "../../plugins/myAxios";
 
 const router = useRouter()
 const route = useRoute()
 
 //队伍名
 const userName = ref("");
-const userById = ref(0);
+const userById = ref();
 const userId = route.params.id
 // 当前用户信息
 const currentUser = ref(null);
 
 
 onMounted(async () => {
+    //当前登录信息
     currentUser.value = await getCurrentUser();
+    //好友信息
     userById.value = await getUserDetail(userId);
+    //好友用户名
     userName.value = userById.value.username;
-
 })
+
+/**
+ * webscoket实现实时聊天
+ */
+const messages = ref([]);
+const inputMessage = ref('');
+
+const websocket = new WebSocket('ws://localhost:8080/api/message'); // 替换为你的WebSocket服务器地址
+
+websocket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    messages.value.push(message);
+};
+
+const sendMessage = () => {
+    const newMessage = {
+        toUserId: userId,
+        message: inputMessage.value,
+    };
+    messages.value.push(newMessage); // 将消息添加到当前用户的消息列表中
+    websocket.send(JSON.stringify(newMessage));
+    inputMessage.value = '';
+};
+
+onMounted(async () => {
+    websocket.onopen = () => {
+        console.log('WebSocket 连接已建立');
+    };
+    /**
+     * 展示历史信息
+     */
+      const res = await myAxios({
+        url: '/user/delete/friend',
+        method: "delete",
+        params: {
+          friendId: friendId
+        },
+      });
+      if (res?.code === 0) {
+        user.value.isFriend = 0;
+      } else {
+        showFailToast((res.description ? `${res.description}` : ''));
+      }
+
+
+      
+    websocket.onclose = () => {
+        showFailToast('请刷新页面');
+        console.log('WebSocket 连接已关闭');
+    };
+});
 
 
 
@@ -81,17 +148,16 @@ const onClickRight = (userId) => {
     });
 };
 
-const setScrollPageSize = () => {
-    // 设置滚动条位置
-    setTimeout(() => {
-        window.scrollTo({
-            left: 0,
-            top: document.scrollingElement.scrollHeight
-        });
-        console.log(document.scrollingElement.scrollHeight)
-    }, 200); // 注意这里需要延迟20ms正好可以获取到更新后的dom节点
-}
-
+// const setScrollPageSize = () => {
+//     // 设置滚动条位置
+//     setTimeout(() => {
+//         window.scrollTo({
+//             left: 0,
+//             top: document.scrollingElement.scrollHeight
+//         });
+//         console.log(document.scrollingElement.scrollHeight)
+//     }, 200); // 注意这里需要延迟20ms正好可以获取到更新后的dom节点
+// }
 </script>
     
     

@@ -47,5 +47,11 @@
                                 user_id  = #{userId} and is_delete = 0 and t.id = tu.team_id);
     </select>
 
+    <select id="selectHavingExpireTime" resultType="org.wxl.alumniMatching.domain.entity.Team">
+        SELECT id, expire_time
+        FROM tb_team
+        WHERE is_delete = 0 AND expire_time is not null and DATEDIFF(expire_time, NOW()) &lt;= 7;
+    </select>
+
 
 </mapper>

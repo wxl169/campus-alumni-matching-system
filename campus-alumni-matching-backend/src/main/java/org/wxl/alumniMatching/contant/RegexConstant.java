@@ -1,7 +1,8 @@
 package org.wxl.alumniMatching.contant;
 
 /**
- * @author 虎哥
+ * 手机邮箱登格式检查
+ * @author 16956
  */
 public interface RegexConstant {
     /**

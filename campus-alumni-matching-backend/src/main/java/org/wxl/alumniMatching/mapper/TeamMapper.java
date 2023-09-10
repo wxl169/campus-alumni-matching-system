@@ -41,4 +41,10 @@ public interface TeamMapper extends BaseMapper<Team> {
      * @return 队伍主键
      */
     List<Long> selectMatchTeams(Long userId);
+
+    /**
+     * 查询所有设置了过期时间的队伍
+     * @return 队伍列表
+     */
+    List<Team> selectHavingExpireTime();
 }

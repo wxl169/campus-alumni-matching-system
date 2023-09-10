@@ -50,6 +50,9 @@ public class MessageUser implements Serializable {
     @ApiModelProperty(value = "展示对象(0-两位都展示，id-是谁的id就展示谁)")
     private Integer messageShow;
 
+    @ApiModelProperty(value = "是否为系统消息 0-不是，1-是")
+    private Integer isSystem;
+
     @ApiModelProperty(value = "是否删除（0-未删除，1-删除）")
     private Integer isDelete;
 

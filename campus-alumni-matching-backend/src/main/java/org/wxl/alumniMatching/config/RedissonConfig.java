@@ -11,7 +11,8 @@ import org.springframework.context.annotation.Configuration;
 /**
  * redisson实现分布式锁
  *
-         */
+ * @author 16956
+ */
 @Configuration
 @ConfigurationProperties(prefix = "spring.redis")
 @Data
@@ -26,7 +27,6 @@ public class RedissonConfig {
         Config config = new Config();
         String redisAddress = String.format("redis://%s:%s",host,port);
         config.useSingleServer().setAddress(redisAddress).setDatabase(redisson_database);
-        System.out.println("redisson_database------------> " + redisson_database);
         //创建实例
         return Redisson.create(config);
     }

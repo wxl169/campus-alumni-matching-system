@@ -24,6 +24,7 @@ import org.wxl.alumniMatching.domain.enums.TeamStatusEnum;
 import org.wxl.alumniMatching.domain.vo.*;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.mapper.TeamMapper;
+import org.wxl.alumniMatching.service.IMessageUserService;
 import org.wxl.alumniMatching.service.ITeamService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -55,15 +56,12 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
     @Resource
     private TeamMapper teamMapper;
     @Resource
+    private IMessageUserService messageUserService;
+    @Resource
     private RedissonClient redissonClient;
 
-    /**
-     * 添加组队
-     *
-     * @param teamAddDTO 队伍信息
-     * @param loginUser 登录用户信息
-     * @return 主键id
-     */
+
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long addTeam(TeamAddDTO teamAddDTO, User loginUser) {
@@ -127,13 +125,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
     }
 
 
-    /**
-     *修改组队信息
-     *
-     * @param teamUpdateDTO 修改后的信息
-     * @param loginUser 登录用户
-     * @return 修改是否成功
-     */
+
     @Override
     public boolean updateTeam(TeamUpdateDTO teamUpdateDTO, User loginUser) {
         if (teamUpdateDTO == null) {
@@ -175,13 +167,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         return this.updateById(updateTeam);
     }
 
-    /**
-     * 删除队伍信息
-     *
-     * @param teamId 队伍id
-     * @param loginUser 当前登录用户
-     * @return 判断是否删除成功
-     */
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean deleteTeam(long teamId, User loginUser) {
@@ -209,14 +195,34 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         return true;
     }
 
-    /**
-     * 分页获取队伍信息
-     *
-     * @param pageNum 页码
-     * @param pageSize 每页数量
-     * @param teamListDTO 查询条件
-     * @return 获取的分页队伍数据
-     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteTeamByList(Set<Long> teamIdList) {
+        if (teamIdList.size() == 0){
+            return true;
+        }
+        //告知成员队伍因过期解散
+//        for (Long teamId: teamIdList) {
+//            TeamUserListVO teamAndUser = this.getTeamAndUser(teamId);
+//            messageUserService
+//        }
+
+        // 移除所有加入队伍的关联信息
+        LambdaQueryWrapper<UserTeam> userTeamQueryWrapper = new LambdaQueryWrapper<>();
+        userTeamQueryWrapper.in(UserTeam::getTeamId, teamIdList);
+        boolean deleteUserTeam = userTeamService.remove(userTeamQueryWrapper);
+        if (!deleteUserTeam) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除队伍关联信息失败");
+        }
+        // 删除队伍
+        boolean deleteTeam = this.removeBatchByIds(teamIdList);
+        if (!deleteTeam){
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"删除队伍信息失败");
+        }
+        return true;
+    }
+
+
     @Override
     public PageVO teamListPage(Integer pageNum, Integer pageSize, TeamListDTO teamListDTO, User loginUser) {
         if (pageNum == null){
@@ -296,12 +302,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         return new PageVO(teamUserListVos,page.getTotal());
     }
 
-    /**
-     * 加入队伍
-     * @param teamListDTO 加入队伍的主键和密码
-     * @param loginUser 当前登录用户
-     * @return 判断是否加入成功
-     */
+
     @Override
     public boolean joinTeam(TeamJoinDTO teamListDTO, User loginUser) {
         if (teamListDTO == null) {
@@ -328,11 +329,14 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         // 该用户已加入的队伍数量
         long userId = loginUser.getId();
         // 只有一个线程能获取到锁
-        RLock lock = redissonClient.getLock("alumniMatching:team:joinTeam:lock");
+        RLock lock = redissonClient.getLock("alumniMatching:team:joinTeam:lock:"+teamId);
         try {
             // 抢到锁并执行 while保证每一个线程都抢到锁，并执行while中的代码
             while (true) {
-                if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
+                //尝试获取锁，参数分别是：获取锁的最大等待时间，锁自动释放时间(-1开启看门狗机制)，时间单位
+                //尝试拿锁10秒后停止重试，返回false
+                boolean tryLock = lock.tryLock(0, TimeUnit.SECONDS);
+                if (tryLock) {
                     System.out.println("getLock: " + Thread.currentThread().getId());
                     LambdaQueryWrapper<UserTeam> userTeamQueryWrapper = new LambdaQueryWrapper<>();
                     userTeamQueryWrapper.eq(UserTeam::getUserId, userId);
@@ -358,8 +362,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
                     userTeam.setUserId(userId);
                     userTeam.setTeamId(teamId);
                     userTeam.setJoinTime(LocalDateTime.now());
-
-
                     return userTeamService.save(userTeam);
                 }
             }
@@ -376,13 +378,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         }
     }
 
-    /**
-     * 退出队伍
-     *
-     * @param teamId 队伍主键
-     * @param loginUser 当前登录用户
-     * @return 判断是否退出成功
-     */
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean quitTeam(Long teamId, User loginUser) {
@@ -438,13 +434,7 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         return userTeamService.remove(queryWrapper);
     }
 
-    /**
-     * 分页获取队伍信息、但不包括已加入队伍的信息s
-     *
-     * @param teamListDTO 查询条件
-     * @param loginUser 当前登录信息
-     * @return 获取的分页队伍数据
-     */
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PageVO teamList(TeamListDTO teamListDTO, User loginUser) {
@@ -476,24 +466,14 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
         return new PageVO(teamList, (long) teamList.size());
     }
 
-    /**
-     * 查询当前用户已加入的队伍
-     *
-     * @param loginUser 获取当前登录用户
-     * @return 返回已加入队伍列表
-     */
+
     @Override
     public List<JoinTeamListVO> userJoinTeamList(User loginUser) {
         List<Team> teamList = teamMapper.getUserJoinTeamList(loginUser.getId());
         return BeanCopyUtils.copyBeanList(teamList, JoinTeamListVO.class);
     }
 
-    /**
-     * 获取队伍信息及成员信息
-     *
-     * @param teamId 队伍id
-     * @return 返回队伍及成员信息
-     */
+
     @Override
     public TeamUserListVO getTeamAndUser(Long teamId) {
         LambdaQueryWrapper<Team> queryWrapper = new LambdaQueryWrapper<>();

@@ -1,9 +1,10 @@
 package org.wxl.alumniMatching.service;
 
-import org.wxl.alumniMatching.domain.dto.MessageUserSendDTO;
+import org.wxl.alumniMatching.domain.dto.SendMessageDTO;
 import org.wxl.alumniMatching.domain.entity.MessageUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.wxl.alumniMatching.domain.entity.User;
+import org.wxl.alumniMatching.domain.vo.MessageUserVO;
 
 import java.util.List;
 
@@ -19,11 +20,11 @@ public interface IMessageUserService extends IService<MessageUser> {
     /**
      * 给用户发送消息
      *
-     * @param messageUserSendDTO 消息信息
+     * @param sendMessageDTO 消息信息
      * @param loginUser 当前登录用户
      * @return 是否发送成功
      */
-    boolean sendMessage(MessageUserSendDTO messageUserSendDTO, User loginUser);
+    boolean sendMessage(SendMessageDTO sendMessageDTO, User loginUser);
 
     /**
      * 根据好友的id查询之间的聊天记录
@@ -42,4 +43,13 @@ public interface IMessageUserService extends IService<MessageUser> {
      * @return 是否清除成功
      */
     boolean deleteMessageById(Long friendId, User loginUser);
+
+    /**
+     * 根据用户id查看最近聊天记录
+     *
+     * @param friendId 好友id
+     * @param loginUser 当前登录用户
+     * @return 最新消息列表
+     */
+    List<MessageUserVO> getRecentMessage(Long friendId, User loginUser);
 }

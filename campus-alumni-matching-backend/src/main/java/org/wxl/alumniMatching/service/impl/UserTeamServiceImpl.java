@@ -26,12 +26,7 @@ public class UserTeamServiceImpl extends ServiceImpl<UserTeamMapper, UserTeam> i
 @Resource
 private UserTeamMapper userTeamMapper;
 
-    /**
-     * 获取某队伍当前人数
-     *
-     * @param teamId 队伍主键
-     * @return 返回队伍人数
-     */
+
     @Override
     public long countTeamUserByTeamId(long teamId) {
         if (teamId <= 0){
@@ -42,12 +37,7 @@ private UserTeamMapper userTeamMapper;
         return this.count(queryWrapper);
     }
 
-    /**
-     * 获取id加入的队伍的id集合
-     *
-     * @param userId 当前用户的id
-     * @return 返回已加入队伍的id集合
-     */
+
     @Override
     public List<Long> getJoinTeamId(Long userId) {
         if (userId == null ||  userId <= 0){
@@ -56,11 +46,7 @@ private UserTeamMapper userTeamMapper;
         return userTeamMapper.getJoinTeamId(userId);
     }
 
-    /**
-     * 将参与该队伍的成员的标签信息选出出现次数最多的标签
-     * @param teamId 队伍id
-     * @return 返回去重后的标签信息
-     */
+
     @Override
     public Map<String, Integer> getUserTags(Long teamId) {
         //获取参与该队伍的所有成员的标签

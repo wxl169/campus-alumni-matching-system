@@ -1,12 +1,11 @@
 package org.wxl.alumniMatching.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.wxl.alumniMatching.common.ErrorCode;
-import org.wxl.alumniMatching.domain.dto.MessageUserSendDTO;
+import org.wxl.alumniMatching.domain.dto.SendMessageDTO;
 import org.wxl.alumniMatching.domain.entity.MessageUser;
 import org.wxl.alumniMatching.domain.entity.User;
+import org.wxl.alumniMatching.domain.vo.MessageUserVO;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.mapper.MessageUserMapper;
 import org.wxl.alumniMatching.mapper.UserMapper;
@@ -34,28 +33,27 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
     private MessageUserMapper messageUserMapper;
 
 
-    /**
-     * 给用户发送消息
-     *
-     * @param messageUserSendDTO 消息信息
-     * @param loginUser 当前登录用户
-     * @return 是否发送成功
-     */
     @Override
-    public boolean sendMessage(MessageUserSendDTO messageUserSendDTO, User loginUser) {
-        if (messageUserSendDTO == null){
+    public boolean sendMessage(SendMessageDTO sendMessageDTO, User loginUser) {
+        if (sendMessageDTO == null){
             throw new BusinessException(ErrorCode.NULL_ERROR,"请求数据为空");
         }
-        if (StringUtils.isBlank(messageUserSendDTO.getContent())){
+        if (StringUtils.isBlank(sendMessageDTO.getMessage())){
             throw new BusinessException(ErrorCode.NULL_ERROR,"请输入内容");
         }
-        judgeMessage(messageUserSendDTO.getReceiveUserId(),loginUser);
-        MessageUser messageUser = BeanCopyUtils.copyBean(messageUserSendDTO, MessageUser.class);
+        if (sendMessageDTO.getToUserId() == null || sendMessageDTO.getToUserId() <= 0){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"请选择聊天对象");
+        }
+        judgeMessage(sendMessageDTO.getToUserId(),loginUser);
+        MessageUser messageUser = new MessageUser();
         //将信息保存数据库
+        messageUser.setContent(sendMessageDTO.getMessage());
         messageUser.setSendUserId(loginUser.getId());
+        messageUser.setReceiveUserId(sendMessageDTO.getToUserId());
         messageUser.setStatus(0);
         messageUser.setSendTime(LocalDateTime.now());
         messageUser.setMessageShow(0);
+        messageUser.setIsSystem(0);
         boolean save = this.save(messageUser);
         if (!save){
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"消息发送失败");
@@ -64,26 +62,13 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
     }
 
 
-    /**
-     * 根据好友的id查询之间的聊天记录
-     *
-     * @param friendId 好友id
-     * @param loginUser 当前登录用户
-     * @return 聊天记录
-     */
     @Override
     public List<MessageUser> getMessageById(Long friendId, User loginUser) {
         judgeMessage(friendId,loginUser);
         return messageUserMapper.getMessageById(friendId,loginUser.getId());
     }
 
-    /**
-     * 清空指定用户的消息记录(单方面）
-     *
-     * @param friendId 好友id
-     * @param loginUser 当前登录用户
-     * @return 是否清除成功
-     */
+
     @Override
     public boolean deleteMessageById(Long friendId, User loginUser) {
         judgeMessage(friendId,loginUser);
@@ -93,6 +78,14 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
         }
         return true;
     }
+
+    @Override
+    public List<MessageUserVO> getRecentMessage(Long friendId, User loginUser) {
+
+        return null;
+    }
+
+
 
 
     /**

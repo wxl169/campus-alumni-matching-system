@@ -38,6 +38,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="bottom">
             <!--            TODO 消息小尖角未实现-->
             <van-field
