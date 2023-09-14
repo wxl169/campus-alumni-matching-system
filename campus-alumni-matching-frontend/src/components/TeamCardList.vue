@@ -19,7 +19,7 @@
                     <van-col offset="1">
                         <!-- 昵称 -->
 
-                        <div class="teamName">{{ team.teamName }}</div>
+                        <div class="teamName" style="text-align: left;">{{ team.teamName }}</div>
                         <!-- 简介 -->
                         <div class="description" v-if="team.description !== null && team.description != ''">描述：{{
                             team.description }}</div>

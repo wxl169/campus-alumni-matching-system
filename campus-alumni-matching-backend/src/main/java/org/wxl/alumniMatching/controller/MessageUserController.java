@@ -6,9 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.common.ResultUtils;
-import org.wxl.alumniMatching.domain.entity.MessageUser;
+import org.wxl.alumniMatching.domain.dto.HistoryMessageDTO;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.MessageUserVO;
+import org.wxl.alumniMatching.domain.vo.NotReadMessageVO;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.IMessageUserService;
 import org.wxl.alumniMatching.service.IUserService;
@@ -31,16 +32,16 @@ public class MessageUserController {
     /**
      * 根据好友的id查询之间的聊天记录
      *
-     * @param friendId 好友id
+     * @param historyMessageDTO 消息信息
      * @param request 当前登录用户
      * @return 聊天记录
      */
     @ApiOperation("查看历史记录")
     @GetMapping("/get")
-    public BaseResponse<List<MessageUser>> getMessageById(Long friendId,HttpServletRequest request){
-        judgeFriendId(friendId);
+    public BaseResponse<List<MessageUserVO>> getMessageById(HistoryMessageDTO historyMessageDTO, HttpServletRequest request){
+        judgeFriendId(historyMessageDTO.getFriendId());
         User loginUser = userService.getLoginUser(request);
-        return ResultUtils.success(messageUserService.getMessageById(friendId,loginUser));
+        return ResultUtils.success(messageUserService.getMessageById(historyMessageDTO,loginUser));
     }
 
     /**
@@ -90,8 +91,18 @@ public class MessageUserController {
         return ResultUtils.success(true);
     }
 
-
-
+    /**
+     * 获取所有信息
+     *
+     * @param request 当前登录用户
+     * @return 未读信息列表
+     */
+    @ApiOperation("获取所有信息")
+    @GetMapping("/get/notRead")
+    public BaseResponse<List<NotReadMessageVO>> getAllNotReadMessage(HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(messageUserService.getAllNotReadMessage(loginUser));
+    }
 
     /**
      * 判断好友id是否符合要求

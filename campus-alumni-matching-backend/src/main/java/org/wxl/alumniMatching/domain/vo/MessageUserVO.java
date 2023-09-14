@@ -26,6 +26,11 @@ public class MessageUserVO implements Serializable {
     @ApiModelProperty(value = "发送用户id")
     private Long sendUserId;
 
+    @ApiModelProperty(value = "发送用户名")
+    private String sendUserName;
+
     @ApiModelProperty(value = "接收用户id")
     private Long receiveUserId;
+    @ApiModelProperty(value = "接收用户名")
+    private String receiveUserName;
 }

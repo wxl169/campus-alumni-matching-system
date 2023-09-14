@@ -44,7 +44,8 @@ import {
   Sticky ,
   Loading,
   PasswordInput, 
-  NumberKeyboard
+  NumberKeyboard,
+  List,
 
 } from "vant";
 import "vant/es/toast/style";
@@ -95,6 +96,7 @@ app.use(Sticky);
 app.use(Loading);
 app.use(PasswordInput);
 app.use(NumberKeyboard);
+app.use(List);
 
 const router = VueRouter.createRouter({
   // 4. 内部提供了 history 模式的实现。为了简单起见，我们在这里使用 hash 模式。

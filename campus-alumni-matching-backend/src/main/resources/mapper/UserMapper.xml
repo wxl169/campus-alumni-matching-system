@@ -64,4 +64,9 @@
           and
             tags is not null and tags &lt;&gt; "" and tags &lt;&gt; "[]";
     </select>
+
+    <select id="selectNameAndAvatar" resultType="org.wxl.alumniMatching.domain.entity.User">
+        select username,avatar_url from tb_user where id = #{friendId} and is_delete = 0;
+    </select>
+
 </mapper>

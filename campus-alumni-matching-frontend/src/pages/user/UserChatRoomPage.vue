@@ -11,42 +11,40 @@
             </div>
         </div>
 
-        <div class="content_box"  v-for="message in messages" >
-            <div class="userbox2" v-if="message.receiveUserId === id">
-                <div class="nameInfo2">
-                    <div style="font-size: 13px">
-                        {{userName}}
+        <div class="content_box">
+            <div v-for="message in messages">
+                <div class="userbox2" v-if="message.receiveUserId === id">
+                    <div class="nameInfo2">
+                        <div class="contentText2">
+                            {{ message.content }}
+                        </div>
                     </div>
-                    <div class="contentText2">
-                        {{ message.content }}
+                    <div>
+                        <van-image style="z-index: 1" width="40px" height="40px" :src="friendAvatarUrl" />
                     </div>
                 </div>
-                <div>
-                    <van-image style="z-index: 1" width="40px" height="40px" :src="friendAvatarUrl" />
-                </div>
-            </div>
 
-            <div class="userbox" v-else>
-                <div class="nameInfo">
-                    <div style="font-size: 13px">
-                        {{username}}
+                <div class="userbox" v-else>
+                    <div class="nameInfo">
+                        <div class="contentText">
+                            {{ message.content }}
+                        </div>
                     </div>
-                    <div class="contentText">
-                        {{ message.content }}
+                    <div>
+                        <van-image style="z-index: 1" width="40px" height="40px" :src="avatarUrl" />
                     </div>
-                </div>
-                <div>
-                    <van-image style="z-index: 1" width="40px" height="40px" :src="currentUser.avatarUrl" />
                 </div>
             </div>
+            <div style="margin-bottom: 50px;"></div>
         </div>
-        
-        <div class="bottom" style="margin-top: 20px;"> 
-            <van-field v-model="inputMessage" center type="textarea"
-                :autosize="{ maxHeight: 100, minHeight: 25 }" placeholder="请输入内容" rows="1">
-                <template #button> 
-                    <van-button size="small" type="primary" @click="sendMessage">发送</van-button> 
-                    </template>
+
+
+        <div class="bottom">
+            <van-field v-model="inputMessage" center type="textarea" :autosize="{ maxHeight: 100, minHeight: 25 }"
+                placeholder="请输入内容" rows="1">
+                <template #button>
+                    <van-button size="small" type="primary" @click="sendMessage">发送</van-button>
+                </template>
             </van-field>
         </div>
     </div>
@@ -55,7 +53,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import { getCurrentUser, getUserDetail } from "../../services/user";
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, onBeforeUnmount } from "vue";
 import { showFailToast } from 'vant';
 import myAxios from "../../plugins/myAxios";
 
@@ -68,9 +66,11 @@ const userById = ref();
 const userId = route.params.id
 // 当前用户信息
 const currentUser = ref(null);
-const friendAvatarUrl  = ref("");
+const friendAvatarUrl = ref("");
 const id = ref(0);
 const username = ref("")
+const avatarUrl = ref("")
+const nowTime = ref(Date());
 onMounted(async () => {
     //当前登录信息
     currentUser.value = await getCurrentUser();
@@ -81,6 +81,7 @@ onMounted(async () => {
     //好友用户名
     userName.value = userById.value.username;
     friendAvatarUrl.value = userById.value.avatarUrl;
+    avatarUrl.value = currentUser.value.avatarUrl;
 })
 
 /**
@@ -97,16 +98,16 @@ const websocket = new WebSocket('ws://localhost:8080/api/message'); // 替换为
  */
 websocket.onmessage = async (event) => {
     const message = JSON.parse(event.data);
-   
-    messages.value.push(message); 
+    messages.value.push(message);
+
     //将消息设置为已读
     await myAxios({
         url: '/message/user/update/messageStatus',
         method: "put",
         params: {
-          friendId: userId
+            friendId: userId
         },
-      });
+    });
 };
 
 
@@ -127,28 +128,22 @@ onMounted(async () => {
     /**
      * 展示历史信息
      */
-      const res = await myAxios({
+    const res = await myAxios({
         url: '/message/user/get/recently',
         method: "get",
         params: {
-          friendId: userId
+            friendId: userId
         },
-      });
-      if (res?.code === 0) {
+    });
+    if (res?.code === 0) {
         messages.value = res.data
-      } else {
+    } else {
         showFailToast((res.description ? `${res.description}` : ''));
-      }
-
-
-      
-    websocket.onclose = () => {
-        showFailToast('请刷新页面');
-        console.log('WebSocket 连接已关闭');
-    };
+    }
 });
-
-
+onBeforeUnmount(async () => {
+    websocket.close();
+});
 
 const scrollerHeight = computed(() => {
     return (window.innerHeight - 50) + 'px'; //自定义高度需求
@@ -176,7 +171,7 @@ const onClickRight = (userId) => {
     
     
     
-<style scoped>
+<style>
 .wrap {
     width: 100%;
     background-color: #f5f5f5;
@@ -205,12 +200,9 @@ const onClickRight = (userId) => {
 }
 
 .content_box {
+    margin-top: 0px;
     background-color: #f5f5f5;
-    /*
-        中间栏计算高度，110是包含了上下固定的两个元素高度90
-        这里padding：10px造成的上下够加了10，把盒子撑大了，所以一共是20要减掉
-        然后不知道是边框还是组件的原因，导致多出了一些，这里再减去5px刚好。不然会出现滚动条到顶或者底部的时候再滚动的话就会报一个错，或者出现滚动条变长一下的bug
-        */
+    padding: 5px;
     overflow-x: hidden;
     overflow-y: auto;
     z-index: -1;
@@ -273,7 +265,7 @@ const onClickRight = (userId) => {
 .nameInfo2 {
     /* 用flex：1把盒子撑开 */
     flex: 1;
-    margin-left: 10px;
+    text-align: left;
 }
 
 .contentText2 {
@@ -292,5 +284,4 @@ const onClickRight = (userId) => {
     margin-top: 3px;
     font-size: 14px;
 }
-
 </style>

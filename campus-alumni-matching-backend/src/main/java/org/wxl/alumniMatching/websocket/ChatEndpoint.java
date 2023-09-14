@@ -78,7 +78,7 @@ public class ChatEndpoint {
 
         //当前在线列表
         for (Map.Entry<Long, Session> entry : ONLINE_USERS.entrySet()) {
-            System.out.println(entry.getKey() + " "  + entry.getValue());
+            System.out.println("----------------"+entry.getKey() + " "  + entry.getValue());
         }
     }
 
@@ -135,12 +135,6 @@ public class ChatEndpoint {
             //获取推送给指定用户的消息格式的数据
             String resultMessage = MessageUtils.getMessage(MessageConstant.NOT_SYSTEM_MESSAGE, toUserId, data);
 
-            //将消息保存在数据库中
-            boolean sendMessage = messageUserService.sendMessage(messageDTO, user);
-            if (!sendMessage){
-                throw new BusinessException(ErrorCode.SYSTEM_ERROR,"发送消息失败");
-            }
-
             //如果发送消息对象没有在线
             if (ONLINE_USERS.get(toUserId) == null){
                 //存入消息队列中
@@ -148,6 +142,11 @@ public class ChatEndpoint {
             }else{
                 //发送消息对象在线
                 ONLINE_USERS.get(toUserId).getBasicRemote().sendText(resultMessage);
+            }
+            //将消息保存在数据库中
+            boolean sendMessage = messageUserService.sendMessage(messageDTO, user);
+            if (!sendMessage){
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR,"发送消息失败");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -165,6 +164,7 @@ public class ChatEndpoint {
     public void onClose(Session session){
         User user = (User)this.httpSession.getAttribute(UserConstant.USER_LOGIN_STATE);
         ONLINE_USERS.remove(user.getId());
+        System.out.println(user.getUsername() + "退出聊天室------------------");
     }
 
 

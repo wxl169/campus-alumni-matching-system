@@ -81,5 +81,65 @@
         order by send_time asc;
     </select>
 
+    <select id="getMessageByContent" resultType="org.wxl.alumniMatching.domain.entity.MessageUser">
+        select  id,content,send_time,send_user_id,receive_user_id
+            from  tb_message_user
+        where
+            (
+                    (send_user_id = #{friendId} and receive_user_id = #{userId})
+                or
+                    (send_user_id = #{userId} and receive_user_id = #{friendId})
+            )
+          and (message_show = 0 or message_show = #{userId})
+          and is_system = 0
+          and is_delete = 0
+          <if test="content != null and content != ''">
+              and content like CONCAT('%',#{content},'%')
+          </if>
+
+          <if test="sendTime != null and sendTime != ''">
+              AND DATE(send_time) = DATE(#{sendTime})
+          </if>
+    </select>
+
+    <select id="getAllNotReadMessage" resultType="org.wxl.alumniMatching.domain.entity.MessageUser">
+        select t2.id, t2.content,t2.status,t2.send_time,t2.send_user_id,t2.receive_user_id,t2.is_system
+                from
+            (select t.send_user_id, MAX(t.send_time) send_time
+                          from tb_message_user t
+                          where
+                             is_delete = 0 and (message_show = 0 or message_show = #{userId})
+                          GROUP BY t.send_user_id ORDER BY t.status asc, t.send_time DESC) t1
+            left join tb_message_user t2 on t1.send_user_id = t2.send_user_id and t1.send_time = t2.send_time
+                    and  (t2.send_user_id = #{userId} or t2.receive_user_id = #{userId})
+        UNION
+        select t2.id ,t2.content,t2.status,t2.send_time,t2.send_user_id,t2.receive_user_id,t2.is_system
+                from
+            (select t.receive_user_id, MAX(t.send_time) send_time
+                          from tb_message_user t
+                            where
+                             is_delete = 0 and (message_show = 0 or message_show = #{userId})
+                          GROUP BY t.receive_user_id ORDER BY t.status asc,  t.send_time DESC) t1
+            left join tb_message_user t2 on t1.receive_user_id = t2.receive_user_id and t1.send_time = t2.send_time
+            and  (t2.send_user_id = #{userId} or t2.receive_user_id = #{userId}) ORDER BY status asc , send_time DESC;
+    </select>
+<!--    优化后的sql-->
+<!--    SELECT t.id, t.content, t.status, t.send_time, t.send_user_id, t.receive_user_id, t.is_system-->
+<!--    FROM (-->
+<!--    SELECT id, content, status, send_time, send_user_id, receive_user_id, is_system,-->
+<!--    ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY status ASC, send_time DESC) AS rn-->
+<!--    FROM (-->
+<!--    SELECT id, content, status, send_time, send_user_id, receive_user_id, is_system, send_user_id AS user_id-->
+<!--    FROM tb_message_user-->
+<!--    WHERE is_delete = 0 AND (message_show = 0 OR message_show = #{userId})-->
+<!--    UNION ALL-->
+<!--    SELECT id, content, status, send_time, send_user_id, receive_user_id, is_system, receive_user_id AS user_id-->
+<!--    FROM tb_message_user-->
+<!--    WHERE is_delete = 0 AND (message_show = 0 OR message_show = #{userId})-->
+<!--    ) AS subquery-->
+<!--    ) AS t-->
+<!--    WHERE rn = 1 AND (t.send_user_id = #{userId} OR t.receive_user_id = #{userId})-->
+<!--    ORDER BY t.status ASC, t.send_time DESC;-->
+
 
 </mapper>

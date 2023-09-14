@@ -37,4 +37,12 @@ public interface UserMapper extends BaseMapper<User> {
      */
     List<User> selectAllUserHavingTag();
 
+    /**
+     * 查找用户姓名和头像
+     *
+     * @param friendId 好友id
+     * @return
+     */
+    User selectNameAndAvatar(Long friendId);
+
 }

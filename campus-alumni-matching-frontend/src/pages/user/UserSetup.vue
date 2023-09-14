@@ -1,39 +1,39 @@
 <template >
-    <template v-if="user">
-      <van-space direction="vertical" fill :size="[0, 10]">
-        <div class="head">
-          <!-- 用户卡片 -->
-          <van-row :wrap="false" align="center">
-            <!-- 左侧头像 -->
-            <van-col>
-              <van-image :src="user.avatarUrl" fit="cover" height="100px" round width="100px" />
-            </van-col>
-            <!-- 右侧信息 -->
-            <van-col offset="1">
-              <!-- 昵称 -->
-              <div class="username">昵称：{{ user.username }}</div>
-              <div class="account">账号：{{ user.userAccount }}</div>
-              <div class="gender" v-if="user.gender === 0">性别：男</div>
-              <div class="gender" v-if="user.gender === 1">性别：女</div>
-              <!-- 简介 -->
-              <div class="profile">个人介绍：{{ user.profile }}</div>
-            </van-col>
-          </van-row>
-        </div>
-        <!-- 标签 -->
-        <div class="center">
-          标签：
-          <van-space :size="5" wrap>
-            <van-tag plain type="primary" v-for="tag in user.tags" size="large">
-              {{ tag }}
-            </van-tag>
-          </van-space>
-          <van-cell title="电子邮箱" :value="user.email" style="margin-top: 50px;" />
-          <van-cell title="查看聊天记录" is-link  style="margin-top: 10px;" @click="selectMessage(user.id)"/>
-          <van-cell title="删除聊天记录" is-link  @click="deleteMessage(user.id)"/>
-        </div>
+  <template v-if="user">
+    <van-space direction="vertical" fill :size="[0, 10]">
+      <div class="head">
+        <!-- 用户卡片 -->
+        <van-row :wrap="false" align="center">
+          <!-- 左侧头像 -->
+          <van-col>
+            <van-image :src="user.avatarUrl" fit="cover" height="100px" round width="100px" />
+          </van-col>
+          <!-- 右侧信息 -->
+          <van-col offset="1">
+            <!-- 昵称 -->
+            <div class="username">昵称：{{ user.username }}</div>
+            <div class="account">账号：{{ user.userAccount }}</div>
+            <div class="gender" v-if="user.gender === 0">性别：男</div>
+            <div class="gender" v-if="user.gender === 1">性别：女</div>
+            <!-- 简介 -->
+            <div class="profile">个人介绍：{{ user.profile }}</div>
+          </van-col>
+        </van-row>
+      </div>
+      <!-- 标签 -->
+      <div class="center">
+        标签：
+        <van-space :size="5" wrap>
+          <van-tag plain type="primary" v-for="tag in user.tags" size="large">
+            {{ tag }}
+          </van-tag>
+        </van-space>
+        <van-cell title="电子邮箱" :value="user.email" style="margin-top: 50px;" />
+        <van-cell title="查看聊天记录" is-link style="margin-top: 10px;" @click="selectMessage(user.id)" />
+        <van-cell title="删除聊天记录" is-link @click="deleteMessage(user.id)" />
+      </div>
 
-        <div class="container">
+      <div class="container">
         <van-space direction="vertical" fill :size="[0, 10]">
           <van-button type="danger" size="large" v-if="user.isFriend === 1" @click="doCancel(user.id)"> 取消关注 </van-button>
 
@@ -42,119 +42,127 @@
           </van-button>
         </van-space>
       </div>
-  
-      </van-space>
-    </template>
-  </template>
-  
-  
-  <script setup lang="ts">
-  import { useRouter, useRoute } from "vue-router";
-  import { onMounted, ref } from "vue";
-  import { getUserDetail } from "../../services/user";
-  import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant';
-  import myAxios from "../../plugins/myAxios";
-  
-  
-  const router = useRouter()
-  const route = useRoute()
-  let userId = ref(0)
-  const user = ref();
-  
-  onMounted(async () => {
-    userId = route.query.userId;
-    user.value = await getUserDetail(userId);
-    if (user.value.tags) {
-      user.value.tags = JSON.parse(user.value.tags);
-    }
-  })
-  /**
-   * 取消关注
-   * @param friendId 
-   */
-  const doCancel = async (friendId: number) => {
-    showConfirmDialog({
-      title: '确认要取消关注吗',
-    })
-      .then(async () => {
-        const res = await myAxios({
-          url: '/user/delete/friend',
-          method: "delete",
-          params: {
-            friendId: friendId
-          },
-        });
-        if (res?.code === 0) {
-          user.value.isFriend = 0;
-          showSuccessToast("取消关注成功")
-        } else {
-          showFailToast('操作失败' + (res.description ? `${res.description}` : ''));
-        }
-      })
-      .catch((error) => {
-        showFailToast('操作失败' + (error));
-      });
-  }
 
-  /**
-   * 
-   * @param friendId 点击关注
-   */
-  const doConcern = async (friendId: number) => {
-    const res = await myAxios({
-      url: '/user/add/friend',
-      method: "post",
-      params: {
-        friendId: friendId
-      },
-    });
-    if (res.data === true) {
-      user.value.isFriend = 1;
-      showSuccessToast("关注成功")
-    } else {
-      showFailToast(res.description);
-    }
+    </van-space>
+  </template>
+</template>
+  
+  
+<script setup lang="ts">
+import { useRouter, useRoute } from "vue-router";
+import { onMounted, ref } from "vue";
+import { getUserDetail } from "../../services/user";
+import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant';
+import myAxios from "../../plugins/myAxios";
+
+
+const router = useRouter()
+const route = useRoute()
+let userId = ref(0)
+const user = ref();
+
+onMounted(async () => {
+  userId = route.query.userId;
+  user.value = await getUserDetail(userId);
+  if (user.value.tags) {
+    user.value.tags = JSON.parse(user.value.tags);
   }
+})
+/**
+ * 取消关注
+ * @param friendId 
+ */
+const doCancel = async (friendId: number) => {
+  showConfirmDialog({
+    title: '确认要取消关注吗',
+  })
+    .then(async () => {
+      const res = await myAxios({
+        url: '/user/delete/friend',
+        method: "delete",
+        params: {
+          friendId: friendId
+        },
+      });
+      if (res?.code === 0) {
+        user.value.isFriend = 0;
+        showSuccessToast("取消关注成功")
+      } else {
+        showFailToast('操作失败' + (res.description ? `${res.description}` : ''));
+      }
+    })
+    .catch((error) => {
+      showFailToast('操作失败' + (error));
+    });
+}
+
+/**
+ * 
+ * @param friendId 点击关注
+ */
+const doConcern = async (friendId: number) => {
+  const res = await myAxios({
+    url: '/user/add/friend',
+    method: "post",
+    params: {
+      friendId: friendId
+    },
+  });
+  if (res.data === true) {
+    user.value.isFriend = 1;
+    showSuccessToast("关注成功")
+  } else {
+    showFailToast(res.description);
+  }
+}
 
 /**
  * 查看聊天记录
  */
 const selectMessage = (friendId: number) => {
-    router.push({
-        path: '/user/message/log',
-        query: {
-            friendId
-        }
-    });
+  router.push({
+    path: '/user/message/log',
+    query: {
+      friendId
+    }
+  });
 };
+
 /**
  * 删除聊天记录
  */
-
-   const deleteMessage = async (friendId: number) => {
-    const res = await myAxios({
+const deleteMessage = async (friendId: number) => {
+  showConfirmDialog({
+    title: '确认要清除聊天记录吗',
+  })
+    .then(async () => {
+        const res = await myAxios({
       url: '/message/user/delete',
       method: "put",
       params: {
         friendId: friendId
       },
     });
-    if (res.code === 0 && res.data === true) {
-      showSuccessToast("清空聊天记录成功");
-    } else {
-      showFailToast(res.description);
-    }
-  }
+      if (res.code === 0 && res.data === true) {
+        showSuccessToast("清空聊天记录成功");
+      } else {
+        showFailToast(res.description);
+      }
+    })
+    .catch(() => {
+      showFailToast('取消操作');
+    });
+}
 
 
-  </script>
+</script>
   
-  <style setup>
-  .head {
-    margin-left: 20px;
-  }
-  
-  .container {
-    margin-top: 50px;
-  }
-  </style>
+<style setup>
+.head {
+  margin-left: 20px;
+}
+
+.container {
+  margin-top: 50px;
+}
+</style>

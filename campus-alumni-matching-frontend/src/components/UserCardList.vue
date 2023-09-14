@@ -18,9 +18,9 @@
           <!-- 右侧信息 -->
           <van-col offset="1">
             <!-- 昵称 -->
-            <div class="username">{{ user.username || user.userAccount }}</div>
+            <div class="username" style="text-align: left;">{{ user.username || user.userAccount }}</div>
             <!-- 简介 -->
-            <div class="profile">简介：{{ user.profile }}</div>
+            <div class="profile" style="text-align: left;">简介：{{ user.profile }}</div>
             <!-- 标签 -->
             <van-space :size="5" wrap>
               <van-tag plain type="primary" v-for="tag in user.tags"  size="medium">

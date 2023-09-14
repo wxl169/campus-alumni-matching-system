@@ -119,6 +119,7 @@ const doConcern = async (friendId: number) => {
       friendId: friendId
     },
   });
+  
   if (res.data === true) {
     user.value.isFriend = 1;
     showSuccessToast("关注成功")

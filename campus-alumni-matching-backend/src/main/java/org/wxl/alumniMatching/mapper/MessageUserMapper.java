@@ -52,4 +52,23 @@ public interface MessageUserMapper extends BaseMapper<MessageUser> {
      * @return 修改是否成功
      */
     boolean updateMessageStatus(Long friendId, Long userId, LocalDateTime now);
+
+    /**
+     * 根据传来的内容信息，模糊匹配消息记录
+     *
+     * @param content 消息
+     * @param friendId 好友id
+     * @param sendTime 发送时间
+     * @param userId 用户Id
+     * @return 消息记录
+     */
+    List<MessageUser> getMessageByContent(String content,String sendTime, Long friendId, Long userId);
+
+    /**
+     * 获取所有的消息记录，然后按时间顺序降序排序
+     *
+     * @param userId 当前登录用户
+     * @return 消息列表
+     */
+    List<MessageUser> getAllNotReadMessage(Long userId);
 }

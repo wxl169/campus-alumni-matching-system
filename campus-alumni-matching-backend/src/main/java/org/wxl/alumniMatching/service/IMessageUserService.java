@@ -1,10 +1,13 @@
 package org.wxl.alumniMatching.service;
 
+import org.wxl.alumniMatching.common.BaseResponse;
+import org.wxl.alumniMatching.domain.dto.HistoryMessageDTO;
 import org.wxl.alumniMatching.domain.dto.SendMessageDTO;
 import org.wxl.alumniMatching.domain.entity.MessageUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.MessageUserVO;
+import org.wxl.alumniMatching.domain.vo.NotReadMessageVO;
 
 import java.util.List;
 
@@ -27,13 +30,13 @@ public interface IMessageUserService extends IService<MessageUser> {
     boolean sendMessage(SendMessageDTO sendMessageDTO, User loginUser);
 
     /**
-     * 根据好友的id查询之间的聊天记录
+     * 根据条件查询好友之间的聊天记录
      *
-     * @param friendId 好友id
+     * @param historyMessageDTO 消息信息
      * @param loginUser 当前登录用户
      * @return 聊天记录
      */
-    List<MessageUser> getMessageById(Long friendId, User loginUser);
+    List<MessageUserVO> getMessageById(HistoryMessageDTO historyMessageDTO, User loginUser);
 
     /**
      * 清空指定用户的消息记录(单方面）
@@ -60,4 +63,12 @@ public interface IMessageUserService extends IService<MessageUser> {
      * @return 修改是否成功
      */
     void updateMessageStatus(Long friendId, User loginUser);
+
+    /**
+     * 获取所有信息
+     *
+     * @param loginUser 当前登录用户
+     * @return 未读信息列表
+     */
+    List<NotReadMessageVO> getAllNotReadMessage(User loginUser);
 }
