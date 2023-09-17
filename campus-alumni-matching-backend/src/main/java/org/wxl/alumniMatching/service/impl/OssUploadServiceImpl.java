@@ -49,8 +49,8 @@ public class OssUploadServiceImpl implements UploadService {
     }
 
     private String uploadOss(MultipartFile imgFile,String filePath){
-        //构造一个带指定 Region 对象的配置类
-        Configuration cfg = new Configuration(	Region.autoRegion());
+        //构造一个带指定 Region 对象的配置类       地区：北美
+        Configuration cfg = new Configuration(	Region.beimei());
         // 指定分片上传版本
         cfg.resumableUploadAPIVersion = Configuration.ResumableUploadAPIVersion.V2;
         //...其他参数参考类注释

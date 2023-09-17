@@ -4,28 +4,30 @@
             <div>
                 <van-icon name="arrow-left" size="20" style="margin-left: 10px" @click="onClickLeft" />
             </div>
-            <div>{{ userName }}
+            <div>{{ teamName }}
             </div>
             <div>
-                <van-icon name="ellipsis" size="22" style="margin-right: 10px" @click="onClickRight(userId)" />
+                <van-icon name="ellipsis" size="22" style="margin-right: 10px" @click="onClickRight(teamId)" />
             </div>
         </div>
 
         <div class="content_box">
             <div v-for="message in messages">
-                <div class="userbox2" v-if="message.receiveUserId === id">
+                
+                <div class="userbox2" v-if="message.sendUserId != id">
                     <div class="nameInfo2">
+                        {{ message.sendUserName }}
                         <div class="contentText2">
                             {{ message.content }}
                         </div>
                     </div>
                     <div>
-                        <van-image style="z-index: 1" width="40px" height="40px" :src="friendAvatarUrl" />
+                        <van-image style="z-index: 1" width="40px" height="40px" :src="message.sendUserAvatarUrl" />
                     </div>
                 </div>
-
                 <div class="userbox" v-else>
                     <div class="nameInfo">
+                        {{ username }}
                         <div class="contentText">
                             {{ message.content }}
                         </div>
@@ -34,6 +36,8 @@
                         <van-image style="z-index: 1" width="40px" height="40px" :src="avatarUrl" />
                     </div>
                 </div>
+
+                
             </div>
             <div style="margin-bottom: 50px;"></div>
         </div>
@@ -43,53 +47,47 @@
             <van-field v-model="inputMessage" center type="textarea" :autosize="{ maxHeight: 100, minHeight: 25 }"
                 placeholder="请输入内容" rows="1">
                 <template #button>
-                    <van-button size="small" type="primary" @click="sendMessage">发送</van-button>
+                    <van-button size="small" type="primary" @click="sendMessage()">发送</van-button>
                 </template>
             </van-field>
         </div>
     </div>
 </template>
-    
+
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
-import { getCurrentUser, getUserDetail } from "../../services/user";
+import { getCurrentUser } from "../../services/user";
+import { getTeamById } from "../../services/team";
 import { computed, onMounted, ref, onBeforeUnmount } from "vue";
-import { showFailToast } from 'vant';
 import myAxios from "../../plugins/myAxios";
 
 const router = useRouter()
 const route = useRoute()
 
 //队伍名
-const userName = ref("");
-const userById = ref();
-const userId = route.params.id
+const teamName = ref("");
 // 当前用户信息
 const currentUser = ref(null);
-const friendAvatarUrl = ref("");
+const teamById = ref(null);
+const teamId = route.params.id
 const id = ref(0);
-const username = ref("")
-const avatarUrl = ref("")
+const username = ref("");
+
 onMounted(async () => {
-    //当前登录信息
     currentUser.value = await getCurrentUser();
     id.value = currentUser.value.id
-    username.value = currentUser.value.username
-    //好友信息
-    userById.value = await getUserDetail(userId);
-    //好友用户名
-    userName.value = userById.value.username;
-    friendAvatarUrl.value = userById.value.avatarUrl;
-    avatarUrl.value = currentUser.value.avatarUrl;
+    username.value = currentUser.value.username;
+    teamById.value = await getTeamById(teamId);
+    teamName.value = teamById.value.teamName;
 })
+
 
 /**
  * webscoket实现实时聊天
  */
 const messages = ref([]);
 const inputMessage = ref('');
-
-const websocket = new WebSocket('ws://localhost:8080/api/message'); // 替换为你的WebSocket服务器地址
+const websocket = new WebSocket('ws://localhost:8080/api/messageTeam'); // 替换为你的WebSocket服务器地址
 
 /**
  * 
@@ -98,21 +96,11 @@ const websocket = new WebSocket('ws://localhost:8080/api/message'); // 替换为
 websocket.onmessage = async (event) => {
     const message = JSON.parse(event.data);
     messages.value.push(message);
-
-    //将消息设置为已读
-    await myAxios({
-        url: '/message/user/update/messageStatus',
-        method: "put",
-        params: {
-            friendId: userId
-        },
-    });
 };
-
 
 const sendMessage = () => {
     const newMessage = {
-        toUserId: userId,
+        teamId: teamId,
         content: inputMessage.value,
     };
     messages.value.push(newMessage); // 将消息添加到当前用户的消息列表中
@@ -128,10 +116,10 @@ onMounted(async () => {
      * 展示历史信息
      */
     const res = await myAxios({
-        url: '/message/user/get/recently',
+        url: '/message/team/get/recently',
         method: "get",
         params: {
-            friendId: userId
+            teamId: teamId
         },
     });
     if (res?.code === 0) {
@@ -140,36 +128,41 @@ onMounted(async () => {
         showFailToast((res.description ? `${res.description}` : ''));
     }
 });
+
 onBeforeUnmount(async () => {
     websocket.close();
 });
 
+
 const scrollerHeight = computed(() => {
     return (window.innerHeight - 50) + 'px'; //自定义高度需求
 })
+
 
 //返回
 const onClickLeft = () => {
     router.back();
 }
 
-const onClickRight = (userId) => {
+const onClickRight = (teamId: number) => {
     router.push({
-        path: '/user/setUp',
+        path: '/team/detail',
         query: {
-            userId
+            teamId
         }
     });
 };
 
+
+
 </script>
-    
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
+
 <style>
 .wrap {
     width: 100%;

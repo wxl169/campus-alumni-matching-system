@@ -11,7 +11,7 @@ import UserLoginPage from "../pages/user/UserLoginPage.vue";
 import UserRegisterPage from "../pages/user/UserRegisterPage.vue";
 import TeamAddPage from "../pages/team/TeamAddPage.vue";
 import TeamUpdatePage from "../pages/team/TeamUpdatePage.vue";
-import ChatRoomPage from "../pages/ChatRoomPage.vue";
+import ChatRoomPage from "../pages/team/ChatRoomPage.vue";
 import TeamDetailPage from "../pages/team/TeamDetailPage.vue";
 import UserDetailsPage from "../pages/user/UserDetailsPage.vue"
 import Tag from "../pages/tag/TagPage.vue";

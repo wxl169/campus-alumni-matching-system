@@ -39,7 +39,6 @@ mybatis-plus:
   type-aliases-package: org.wxl.alumniMatching.domain.entity
   mapper-locations: classpath:mapper/*.xml
 
-
 #端口号配置
 server:
   port: 8080
@@ -50,4 +49,8 @@ server:
         comment: localhost
         secure: true
         same-site: none
+  reactive:
+    session:
+      cookie:
+        domain: localhost
 

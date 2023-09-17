@@ -26,4 +26,11 @@ public interface UserTeamMapper extends BaseMapper<UserTeam> {
      * @return 返回去重后的标签信息
      */
     List<String> getUserTags(Long teamId);
+
+    /**
+     * 获取加入队伍的成员id
+     * @param teamId 队伍id
+     * @return 成员id列表
+     */
+    List<Long> getTeamUserId(Long teamId);
 }

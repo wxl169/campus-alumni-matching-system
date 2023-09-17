@@ -4,7 +4,6 @@
         <!-- <van-button type="primary" @click="doJoinTeam">创建队伍</van-button> -->
         <team-card-list :team-list="teamList" :loading="loading_team"/>
 
-        <van-empty v-if="teamList?.length < 1" description="数据为空"/>
     </div>
 </template>
 

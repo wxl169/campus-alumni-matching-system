@@ -25,5 +25,9 @@
                                         AND
                                           u.id IN (SELECT user_id FROM tb_user_team WHERE team_id = #{teamId});
     </select>
+    <select id="getTeamUserId" resultType="java.lang.Long" parameterType="java.lang.Long">
+        select user_id from tb_user_team where
+                                        is_delete = 0 and team_id = #{teamId};
+    </select>
 
 </mapper>

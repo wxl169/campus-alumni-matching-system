@@ -1,6 +1,5 @@
 package org.wxl.alumniMatching.service;
 
-import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.domain.dto.HistoryMessageDTO;
 import org.wxl.alumniMatching.domain.dto.SendMessageDTO;
 import org.wxl.alumniMatching.domain.entity.MessageUser;

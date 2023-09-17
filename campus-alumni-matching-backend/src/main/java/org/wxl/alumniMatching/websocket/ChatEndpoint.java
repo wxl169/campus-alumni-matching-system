@@ -84,27 +84,6 @@ public class ChatEndpoint {
 
 
     /**
-     * 广播消息
-     * @param message
-     */
-    private void broadcastAllUsers(String message){
-        //遍历map集合
-        try {
-            Set<Map.Entry<Long, Session>> entrySet = ONLINE_USERS.entrySet();
-            for (Map.Entry<Long,Session> entry : entrySet) {
-                //获取到所有用户对应的session对象
-                Session session = entry.getValue();
-                //发送消息
-                session.getBasicRemote().sendText(message);
-             }
-            } catch (IOException e) {
-            //记录日志
-                log.error("广播消息有误："+e);
-            }
-    }
-
-
-    /**
      *浏览器发送消息到服务端，该方法被调用
      *
      * @param message {"toName":"张三","message":"你好"}
