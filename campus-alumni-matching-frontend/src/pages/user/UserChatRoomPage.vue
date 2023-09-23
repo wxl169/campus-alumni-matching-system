@@ -115,7 +115,12 @@ const sendMessage = () => {
         toUserId: userId,
         content: inputMessage.value,
     };
-    messages.value.push(newMessage); // 将消息添加到当前用户的消息列表中
+    // 将消息添加到当前用户的消息列表中
+    if (Array.isArray(messages.value)) {
+        messages.value.push(newMessage);
+    } else {
+        messages.value = [newMessage];
+    }
     websocket.send(JSON.stringify(newMessage));
     inputMessage.value = '';
 };
