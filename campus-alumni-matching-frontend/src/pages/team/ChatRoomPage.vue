@@ -12,20 +12,8 @@
         </div>
 
         <div class="content_box">
-            <div v-for="message in messages">
-                
-                <div class="userbox2" v-if="message.sendUserId != id">
-                    <div class="nameInfo2">
-                        {{ message.sendUserName }}
-                        <div class="contentText2">
-                            {{ message.content }}
-                        </div>
-                    </div>
-                    <div>
-                        <van-image style="z-index: 1" width="40px" height="40px" :src="message.sendUserAvatarUrl" />
-                    </div>
-                </div>
-                <div class="userbox" v-else>
+            <div v-for="message in teamMessages">
+                <div class="userbox" v-if="message.sendUserId === id ">
                     <div class="nameInfo">
                         {{ username }}
                         <div class="contentText">
@@ -37,17 +25,27 @@
                     </div>
                 </div>
 
-                
+                <div class="userbox2" v-else>
+                    <div class="nameInfo2">
+                        {{ message.sendUserName }}
+                        <div class="contentText2">
+                            {{ message.content }}
+                        </div>
+                    </div>
+                    <div>
+                        <van-image style="z-index: 1" width="40px" height="40px" :src="message.sendUserAvatarUrl" />
+                    </div>
+                </div>
             </div>
             <div style="margin-bottom: 50px;"></div>
         </div>
 
 
         <div class="bottom">
-            <van-field v-model="inputMessage" center type="textarea" :autosize="{ maxHeight: 100, minHeight: 25 }"
+            <van-field v-model="inputMessageTeam" center type="textarea" :autosize="{ maxHeight: 100, minHeight: 25 }"
                 placeholder="请输入内容" rows="1">
                 <template #button>
-                    <van-button size="small" type="primary" @click="sendMessage()">发送</van-button>
+                    <van-button size="small" type="primary" @click="sendMessageTeam">发送</van-button>
                 </template>
             </van-field>
         </div>
@@ -60,6 +58,7 @@ import { getCurrentUser } from "../../services/user";
 import { getTeamById } from "../../services/team";
 import { computed, onMounted, ref, onBeforeUnmount } from "vue";
 import myAxios from "../../plugins/myAxios";
+import { showFailToast } from 'vant';
 
 const router = useRouter()
 const route = useRoute()
@@ -72,6 +71,14 @@ const teamById = ref(null);
 const teamId = route.params.id
 const id = ref(0);
 const username = ref("");
+const avatarUrl = ref("");
+/**
+ * webscoket实现实时聊天
+ */
+ const teamMessages = ref([]);
+const inputMessageTeam = ref('');
+const websocket = new WebSocket('ws://localhost:8080/api/messageTeam'); // 替换为你的WebSocket服务器地址
+
 
 onMounted(async () => {
     currentUser.value = await getCurrentUser();
@@ -79,36 +86,8 @@ onMounted(async () => {
     username.value = currentUser.value.username;
     teamById.value = await getTeamById(teamId);
     teamName.value = teamById.value.teamName;
-})
+    avatarUrl.value = currentUser.value.avatarUrl;
 
-
-/**
- * webscoket实现实时聊天
- */
-const messages = ref([]);
-const inputMessage = ref('');
-const websocket = new WebSocket('ws://localhost:8080/api/messageTeam'); // 替换为你的WebSocket服务器地址
-
-/**
- * 
- * @param event 接收对方发送的消息
- */
-websocket.onmessage = async (event) => {
-    const message = JSON.parse(event.data);
-    messages.value.push(message);
-};
-
-const sendMessage = () => {
-    const newMessage = {
-        teamId: teamId,
-        content: inputMessage.value,
-    };
-    messages.value.push(newMessage); // 将消息添加到当前用户的消息列表中
-    websocket.send(JSON.stringify(newMessage));
-    inputMessage.value = '';
-};
-
-onMounted(async () => {
     websocket.onopen = () => {
         console.log('WebSocket 连接已建立');
     };
@@ -123,21 +102,45 @@ onMounted(async () => {
         },
     });
     if (res?.code === 0) {
-        messages.value = res.data
+        teamMessages.value = res.data
     } else {
         showFailToast((res.description ? `${res.description}` : ''));
     }
-});
+})
+
+
+/**
+ * 
+ * @param event 接收对方发送的消息
+ */
+websocket.onmessage = async (event) => {
+    const message = JSON.parse(event.data);
+    teamMessages.value.push(message);
+};
+
+const sendMessageTeam = () => {
+    const newMessageTeam = {
+        teamId: teamId,
+        content: inputMessageTeam.value,
+    };
+    // 将消息添加到当前用户的消息列表中
+    if (Array.isArray(teamMessages.value)) {
+        teamMessages.value.push(newMessageTeam);
+    } else {
+        teamMessages.value = [newMessageTeam];
+    }
+    websocket.send(JSON.stringify(newMessageTeam));
+    inputMessageTeam.value = '';
+};
+
 
 onBeforeUnmount(async () => {
     websocket.close();
 });
 
-
 const scrollerHeight = computed(() => {
     return (window.innerHeight - 50) + 'px'; //自定义高度需求
 })
-
 
 //返回
 const onClickLeft = () => {

@@ -73,6 +73,9 @@ private UserMapper userMapper;
         messageTeams.forEach(messageTeam -> {
             userId.add(messageTeam.getSendUserId());
         });
+        if(userId.size() == 0){
+            return null;
+        }
         List<User> users = userMapper.selectBatchIds(userId);
         messageTeamVOS = messageTeamVOS.stream().peek(messageTeam -> {
             for (User user : users) {

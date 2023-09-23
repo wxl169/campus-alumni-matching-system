@@ -3,6 +3,9 @@ package org.wxl.alumniMatching.utils;
 
 import java.security.MessageDigest;
 
+/**
+ * @author 16956
+ */
 public class MD5Util {
     /***
      * MD5加码 生成32位md5码

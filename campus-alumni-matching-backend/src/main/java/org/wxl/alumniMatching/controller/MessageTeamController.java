@@ -30,6 +30,7 @@ public class MessageTeamController {
     private IMessageTeamService messageTeamService;
     @Resource
     private IUserService userService;
+
     /**
      * 根据用户id查看最近聊天记录
      *

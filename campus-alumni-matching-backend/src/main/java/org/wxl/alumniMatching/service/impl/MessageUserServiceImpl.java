@@ -169,10 +169,9 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
         //1.获取所有的消息记录，然后时间降序排列
         Long loginUserId = loginUser.getId();
         List<MessageUser> messageUserList = messageUserMapper.getAllNotReadMessage(loginUserId);
-        messageUserList = messageUserList.stream().filter(message ->{
-            //排除空数据
-            return message != null;
-        }).collect(Collectors.toList());
+        //排除空数据
+        messageUserList = messageUserList.stream().filter(Objects::nonNull).collect(Collectors.toList());
+
         //如果为空，则返回null
         if (messageUserList.size() == 0){
             return null;
@@ -181,10 +180,12 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
             // 由于正序可能会导致后面的元素会向前移动，导致索引发生变化，可能会导致未能正确地遍历所有元素，所有选择倒序
             for (int i = messageUserList.size() - 1; i > 0; i--){
                 for (int j = i - 1; j >= 0; j--){
+                    //第一组消息
                     MessageUser messageUser = messageUserList.get(j);
                     Long sendUserId = messageUser.getSendUserId();
                     Long receiveUserId = messageUser.getReceiveUserId();
                     LocalDateTime sendTime = messageUser.getSendTime();
+                    //第二组消息
                     MessageUser messageUser2 = messageUserList.get(i);
                     Long sendUserId2 = messageUser2.getSendUserId();
                     Long receiveUserId2 = messageUser2.getReceiveUserId();
@@ -213,6 +214,7 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
                  user = userMapper.selectNameAndAvatar(message.getReceiveUserId());
                  message.setReceiveUserName(user.getUsername());
                  message.setReceiveUserAvatar(user.getAvatarUrl());
+                 message.setStatus(MessageConstant.READ_MESSAGE);
             }else{
                 //将发送人的名字和头像输入
                 user = userMapper.selectNameAndAvatar(message.getSendUserId());

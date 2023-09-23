@@ -9,14 +9,11 @@ import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.config.GetHttpSessionConfig;
 import org.wxl.alumniMatching.contant.MessageConstant;
 import org.wxl.alumniMatching.contant.UserConstant;
-import org.wxl.alumniMatching.domain.dto.SendMessageDTO;
 import org.wxl.alumniMatching.domain.dto.SendTeamMessageDTO;
 import org.wxl.alumniMatching.domain.entity.User;
-import org.wxl.alumniMatching.domain.vo.MessageVO;
 import org.wxl.alumniMatching.domain.vo.TeamMessageVO;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.IMessageTeamService;
-import org.wxl.alumniMatching.utils.MessageUtils;
 import org.wxl.alumniMatching.utils.TeamMessageUtils;
 
 import javax.servlet.http.HttpSession;
@@ -24,7 +21,6 @@ import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -96,10 +92,14 @@ public class ChatEndpointTeam {
     private void broadcastAllUsers(User user,String message){
         //遍历map集合
         try {
+            //当前登录用户的id
             Long userId = user.getId();
+            //小组内所有在线的用户
             Set<Map.Entry<Long, Session>> entrySet = ONLINE_USERS_TEAM.entrySet();
+            //存入当前登录的用户id
             Set<Long> loginUserId = new HashSet<>(16);
             entrySet = entrySet.stream().filter(teamMessage ->{
+                //将所有在线的用户id加入set集合
                 loginUserId.add(teamMessage.getKey());
                 //排除当前登录用户
                 if (teamMessage.getKey().equals(userId)){
@@ -113,7 +113,6 @@ public class ChatEndpointTeam {
                     Session session = entry.getValue();
                     //发送消息
                     session.getBasicRemote().sendText(message);
-
                 }
             }
             //将消息保存在数据库

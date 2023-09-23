@@ -39,6 +39,11 @@ private UserTeamMapper userTeamMapper;
         Long teamId = messageTeam.getTeamId();
         //该队伍的所有成员id
         List<Long> userList = userTeamMapper.getTeamUserId(teamId);
+        //如果该队伍只有群主一个人，则直接返回
+        if (userList.size() == 1){
+            return true;
+        }
+
         //筛选出没有登录的用户
         Set<Long> finalLoginUserId = loginUserId;
         Set<Long> unLoginUserId = userList.stream().filter(userId -> {
