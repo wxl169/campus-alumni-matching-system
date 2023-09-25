@@ -1,5 +1,6 @@
 package org.wxl.alumniMatching.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.wxl.alumniMatching.contant.MessageConstant;
 import org.wxl.alumniMatching.domain.entity.MessageTeam;
@@ -31,6 +32,8 @@ import java.util.stream.Collectors;
 public class MessageTeamUserServiceImpl extends ServiceImpl<MessageTeamUserMapper, MessageTeamUser> implements IMessageTeamUserService {
 @Resource
 private UserTeamMapper userTeamMapper;
+@Resource
+private MessageTeamUserMapper messageTeamUserMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -81,5 +84,12 @@ private UserTeamMapper userTeamMapper;
             }
 
         return this.saveBatch(messageTeamUsers);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean deleteTeamMessageUser(Long teamId, Long userId) {
+        //删除指定队伍和用户的消息记录
+        return messageTeamUserMapper.deleteMessageTeamUser(teamId,userId);
     }
 }

@@ -278,7 +278,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 return tempTagNameSet.contains(finalTagNameList1.get(0));
             }).collect(Collectors.toList());
             userTagVOList = BeanCopyUtils.copyBeanList(users, UserTagVO.class);
-            redisTemplate.opsForValue().set(redisKey,userTagVOList,60,TimeUnit.MINUTES);
+
+            //生成一个随机数，
+            Random random = new Random();
+            // 生成1~10之间的随机数
+            int randomMinutes = random.nextInt(10) + 1;
+            int totalMinutes = 60 + randomMinutes;
+            redisTemplate.opsForValue().set(redisKey, userTagVOList, totalMinutes, TimeUnit.MINUTES);
         }
         if (tagNameList.size() > 1){
             //如果返回一个以上，则在第一个标签数据的基础上，比较。
@@ -730,6 +736,51 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         
         return false;
     }
+
+    @Override
+    public void userCacheByTag() {
+        //先将所有子标签查询出
+        List<String> childrenTagName = tagMapper.getAllChildrenTagName();
+        //如果没有子标签则结束
+        if (childrenTagName.size() == 0){
+            return;
+        }
+        //过滤出标签对应用户数据已经过期的标签名
+        Set<String> childrenTagNameSet = childrenTagName.stream().filter(tagName -> {
+            String redisKey = String.format("alumniMatching:user:searchUserByTag:%s", tagName);
+            //检查redis的key是否存在,如果存在则排除
+            return Boolean.FALSE.equals(redisTemplate.hasKey(redisKey));
+        }).collect(Collectors.toSet());
+
+        //如果全部标签都存在，则直接返回
+        if (childrenTagNameSet.size() == 0){
+            return;
+        }
+        // 查询状态正常，有标签的所有用户
+        List<User> userList = userMapper.selectAllUserHavingTag();
+        Gson gson = new Gson();
+        //如果标签对应用户数据已经过期，则重新搜索数据库 使用并行流
+        childrenTagNameSet.parallelStream().forEach(tagName ->{
+            String redisKey = String.format("alumniMatching:user:searchUserByTag:%s", tagName);
+            //在内存中判断是否包含要求的标签
+            List<User> users = userList.stream().filter(user -> {
+                String tagsStr = user.getTags();
+                Set<String> tempTagNameSet = gson.fromJson(tagsStr, new TypeToken<Set<String>>() {}.getType());
+                tempTagNameSet = Optional.ofNullable(tempTagNameSet).orElse(new HashSet<>());
+                return tempTagNameSet.contains(tagName);
+            }).collect(Collectors.toList());
+            List<UserTagVO> userTagVOList = BeanCopyUtils.copyBeanList(users, UserTagVO.class);
+            //生成一个随机数，
+            Random random = new Random();
+            // 生成1~10之间的随机数
+            int randomMinutes = random.nextInt(10) + 1;
+            int totalMinutes = 60 + randomMinutes;
+            redisTemplate.opsForValue().set(redisKey, userTagVOList, totalMinutes, TimeUnit.MINUTES);
+        });
+
+
+    }
+
 
 
     @Override

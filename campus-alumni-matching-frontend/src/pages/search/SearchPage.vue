@@ -34,6 +34,8 @@ onMounted(async () => {
   }else{
     showFailToast("获取失败:"+res.description)
   }
+
+  await myAxios.get('/user/cache/tag');
 })
 
 const show = ref(true);

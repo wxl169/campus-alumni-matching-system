@@ -13,4 +13,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface MessageTeamUserMapper extends BaseMapper<MessageTeamUser> {
 
+    /**
+     * 删除当前用户在该群接受到的消息
+     *
+     * @param teamId 队伍id
+     * @param userId 用户id
+     * @return 是否删除成功
+     */
+    boolean deleteMessageTeamUser(Long teamId, Long userId);
 }

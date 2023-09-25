@@ -19,5 +19,9 @@ public class SendTeamMessageDTO implements Serializable {
      * 发送的内容
      */
     private String content;
+    /**
+     * 页面摆放位置
+     */
+    private String position;
 
 }

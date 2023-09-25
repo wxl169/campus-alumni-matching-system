@@ -9,19 +9,37 @@
         <result column="send_time" property="sendTime" />
         <result column="send_user_id" property="sendUserId" />
         <result column="team_id" property="teamId" />
+        <result column="message_show" property="messageShow" />
         <result column="is_delete" property="isDelete" />
     </resultMap>
 
     <insert id="saveTeamMessage" parameterType="org.wxl.alumniMatching.domain.entity.MessageTeam" useGeneratedKeys="true" keyProperty="id">
         insert into tb_message_team (
-                content,send_time,send_user_id,team_id,is_delete
-        ) values (#{content},#{sendTime},#{sendUserId},#{teamId},0)
+                content,send_time,send_user_id,team_id,message_show,is_delete
+        ) values (#{content},#{sendTime},#{sendUserId},#{teamId},0,0)
     </insert>
     <select id="selectTeamMessage" resultType="org.wxl.alumniMatching.domain.entity.MessageTeam"
             parameterType="java.lang.Long">
-        select id,content,send_user_id
-            from tb_message_team
-        where
-            is_delete = 0 and team_id = #{teamId} and send_time >= DATE_SUB(NOW(), INTERVAL 2 DAY);
+
+        SELECT *
+        FROM (
+                 SELECT mt.content, mt.send_user_id, mt.send_time
+                 FROM tb_message_team AS mt
+                          JOIN tb_message_team_user AS mtu ON mt.id = mtu.message_team_id
+                 WHERE mt.team_id = #{teamId}
+                   AND mt.is_delete = 0
+                   AND mtu.is_delete = 0
+                   AND mtu.receive_user_id = #{userId}
+                   AND mt.send_time >= DATE_SUB(NOW(), INTERVAL 2 DAY)
+                 UNION
+                 SELECT t2.content, t2.send_user_id, t2.send_time
+                 FROM tb_message_team AS t2
+                 WHERE t2.send_user_id = #{userId}
+                   AND t2.is_delete = 0
+                   AND t2.message_show = 0
+                   AND t2.send_time >= DATE_SUB(NOW(), INTERVAL 2 DAY)
+                   AND t2.team_id = #{teamId}
+             ) AS merged_table
+        ORDER BY send_time ASC;
     </select>
 </mapper>

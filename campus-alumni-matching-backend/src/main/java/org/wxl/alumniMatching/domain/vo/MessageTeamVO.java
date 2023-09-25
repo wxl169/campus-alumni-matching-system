@@ -16,5 +16,6 @@ public class MessageTeamVO implements Serializable {
     private String sendUserName;
     private Object content;
     private String sendUserAvatar;
+    private Boolean current;
 
 }

@@ -25,4 +25,12 @@ public interface IMessageTeamUserService extends IService<MessageTeamUser> {
      * @return 是否成功
      */
     boolean saveTeamUserMessage(Long teamMessageId, Set<Long> loginUserId,MessageTeam messageTeam);
+
+    /**
+     * 删除群员指定的id
+     *
+     * @param teamId 队伍id
+     * @param userId 用户id
+     */
+    boolean deleteTeamMessageUser(Long teamId, Long userId);
 }

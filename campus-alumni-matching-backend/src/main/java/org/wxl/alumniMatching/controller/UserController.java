@@ -384,4 +384,20 @@ public class UserController {
         return ResultUtils.success(userService.userDeleteTags(tagName,loginUser));
     }
 
+    /**
+     * 当进入搜索用户时，将所有标签对应的用户信息缓存在redis中
+     * @param request 判断是否登录
+     * @return 无返回值
+     */
+    @ApiOperation(value = "根据标签缓存用户信息")
+    @GetMapping("/cache/tag")
+    public BaseResponse userCacheByTag(HttpServletRequest request){
+        //判断当前用户是否登录
+        userService.getLoginUser(request);
+        //将所有标签对应的用户信息缓存在redis中
+        userService.userCacheByTag();
+        return ResultUtils.success(true);
+    }
+
+
 }

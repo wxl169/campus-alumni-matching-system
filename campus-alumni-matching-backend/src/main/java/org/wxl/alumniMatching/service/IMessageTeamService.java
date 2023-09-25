@@ -20,7 +20,7 @@ import java.util.Set;
 public interface IMessageTeamService extends IService<MessageTeam> {
 
     /**
-     * 将队伍消息信息保持在数据库
+     * 将队伍消息信息保存在数据库
      * @param loginUserId 当前在线列表
      * @param teamMessageVO 消息信息
      * @return 是否成功
@@ -34,4 +34,13 @@ public interface IMessageTeamService extends IService<MessageTeam> {
      * @return 最新消息列表
      */
     List<MessageTeamVO> getRecentMessage(Long teamId, User loginUser);
+
+    /**
+     * 当前登录用户清空聊天记录
+     *
+     * @param teamId 队伍id
+     * @param userId 当前登录用户
+     * @return 是否删除成功
+     */
+    Boolean deleteTeamMessage(Long teamId, Long userId);
 }

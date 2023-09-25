@@ -12,4 +12,23 @@
         <result column="is_delete" property="isDelete" />
     </resultMap>
 
+    <update id="deleteMessageTeamUser">
+            update tb_message_team_user
+                    set is_delete = 1
+            where
+                id in
+                (
+                  select team_user_id from
+                                    (
+                                        select mtu.id as team_user_id
+                                        from tb_message_team as mt
+                                                 join tb_message_team_user as mtu
+                                                      on mt.id = mtu.message_team_id
+                                                          and mt.team_id = #{teamId}
+                                                          and mtu.receive_user_id = #{userId}
+                                    ) as a
+                );
+
+    </update>
+
 </mapper>

@@ -149,15 +149,20 @@ public class ChatEndpointTeam {
             if (StringUtils.isBlank(sendTeamMessageDTO.getContent())){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR,"请输入内容");
             }
-
+            if(StringUtils.isBlank(sendTeamMessageDTO.getPosition())){
+                //如果为空，则设置为放置在页面右侧
+                sendTeamMessageDTO.setPosition("right");
+            }
             //获取发送消息的群聊id
             Long teamId = sendTeamMessageDTO.getTeamId();
             //获取消息数据
             String data = sendTeamMessageDTO.getContent();
+            //放置的位置
+            String position = sendTeamMessageDTO.getPosition();
             //获取当前登录用户
             User user = (User)httpSession.getAttribute(UserConstant.USER_LOGIN_STATE);
             //获取推送给指定用户的消息格式的数据
-            String resultMessage = TeamMessageUtils.getMessage(MessageConstant.NOT_SYSTEM_MESSAGE, user, teamId, data);
+            String resultMessage = TeamMessageUtils.getMessage(MessageConstant.NOT_SYSTEM_MESSAGE, user, teamId, data,position);
             //群发消息
             this.broadcastAllUsers(user,resultMessage);
     }

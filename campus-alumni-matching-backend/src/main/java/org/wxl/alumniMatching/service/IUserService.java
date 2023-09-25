@@ -200,4 +200,9 @@ public interface IUserService extends IService<User> {
      * @return 是否发送成功
      */
     boolean userSendMessageCode(String phone, HttpServletRequest request);
+
+    /**
+     * 将所有标签对应的用户信息缓存到redis中
+     */
+    void userCacheByTag();
 }

@@ -20,6 +20,7 @@ public class TeamMessageVO implements Serializable {
     private Long sendUserId;
     private Long teamId;
     private Object content;
-//    private String sendUserName;
-//    private String sendUserAvatarUrl;
+    private String position;
+    private String sendUserName;
+    private String sendUserAvatar;
 }

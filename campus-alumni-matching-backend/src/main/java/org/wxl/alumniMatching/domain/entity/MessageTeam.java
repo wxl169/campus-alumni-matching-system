@@ -43,7 +43,8 @@ public class MessageTeam implements Serializable {
 
     @ApiModelProperty(value = "接收群id")
     private Long teamId;
-
+    @ApiModelProperty(value = "消息是否删除（0-未删，1-删除）")
+    private Integer messageShow;
     @ApiModelProperty(value = "是否删除（0-未删除，1-删除）")
     private Integer isDelete;
 

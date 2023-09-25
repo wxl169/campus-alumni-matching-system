@@ -3,6 +3,7 @@ package org.wxl.alumniMatching.controller;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.wxl.alumniMatching.common.BaseResponse;
@@ -10,7 +11,6 @@ import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.common.ResultUtils;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.MessageTeamVO;
-import org.wxl.alumniMatching.domain.vo.MessageUserVO;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.IMessageTeamService;
 import org.wxl.alumniMatching.service.IUserService;
@@ -46,6 +46,23 @@ public class MessageTeamController {
         return ResultUtils.success(messageTeamService.getRecentMessage(teamId,loginUser));
     }
 
+
+    /**
+     * 当前登录用户清空聊天记录
+     *
+     * @param teamId 队伍id
+     * @param request 当前登录用户
+     * @return 是否清除成功
+     */
+    @ApiOperation("清除聊天记录")
+    @PutMapping("/delete")
+    public BaseResponse<Boolean> deleteTeamMessage(Long teamId,HttpServletRequest request){
+        judgeTeamId(teamId);
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(messageTeamService.deleteTeamMessage(teamId,loginUser.getId()));
+    }
+
+
     /**
      * 判断队伍id是否符合要求
      *
@@ -56,4 +73,6 @@ public class MessageTeamController {
             throw new BusinessException(ErrorCode.NULL_ERROR,"请求数据为空");
         }
     }
+
+
 }

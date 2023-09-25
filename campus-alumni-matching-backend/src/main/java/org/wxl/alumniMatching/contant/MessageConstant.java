@@ -22,6 +22,19 @@ public interface MessageConstant {
      * 未读消息
      */
     int NOT_READ_MESSAGE = 0;
+    /**
+     * 消息放置在页面左边
+     */
+    String POSITION_LEFT ="left";
+    /**
+     * 消息放置在页面右边
+     */
+    String POSITION_RIGHT ="right";
+
+    /**
+     * 消息删除
+     */
+    int REMOVE_MESSAGE = 1;
 
 
 }

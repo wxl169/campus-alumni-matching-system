@@ -16,17 +16,19 @@ public class TeamMessageUtils {
      * @param user 发送用户
      * @param teamId 发送消息的队伍id
      * @param message 发送的消息
+     * @param position 放置界面的位置
      * @return json格式的消息
      */
-    public static  String getMessage(Integer isSysteamMessage, User user, Long teamId, Object message){
+    public static  String getMessage(Integer isSysteamMessage, User user, Long teamId, Object message,String position){
         TeamMessageVO teamMessageVO = new TeamMessageVO();
         teamMessageVO.setIsSystem(isSysteamMessage);
         teamMessageVO.setContent(message);
+        teamMessageVO.setPosition(position);
         Long userId = user.getId();
-//        String username = user.getUsername();
-//        String avatarUrl = user.getAvatarUrl();
-//        teamMessageVO.setSendUserAvatarUrl(avatarUrl);
-//        teamMessageVO.setSendUserName(username);
+        String username = user.getUsername();
+        String avatarUrl = user.getAvatarUrl();
+        teamMessageVO.setSendUserAvatar(avatarUrl);
+        teamMessageVO.setSendUserName(username);
         if (userId!=null && userId > 0){
             teamMessageVO.setSendUserId(userId);
         }

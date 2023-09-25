@@ -27,7 +27,8 @@ public interface MessageTeamMapper extends BaseMapper<MessageTeam> {
      * 查出最近两天的消息记录
      *
      * @param teamId 队伍id
+     * @param userId 用户id
      * @return 消息列表
      */
-    List<MessageTeam> selectTeamMessage(Long teamId);
+    List<MessageTeam> selectTeamMessage(Long teamId,Long userId);
 }
