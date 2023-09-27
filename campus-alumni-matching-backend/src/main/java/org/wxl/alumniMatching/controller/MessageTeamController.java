@@ -9,8 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.wxl.alumniMatching.common.BaseResponse;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.common.ResultUtils;
+import org.wxl.alumniMatching.domain.dto.HistoryTeamMessageDTO;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.MessageTeamVO;
+import org.wxl.alumniMatching.domain.vo.TeamMessageVO;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.service.IMessageTeamService;
 import org.wxl.alumniMatching.service.IUserService;
@@ -64,6 +66,22 @@ public class MessageTeamController {
 
 
     /**
+     * 根据消息查询聊天记录
+     *
+     * @param historyTeamMessageDTO 条件
+     * @param request 获取当前登录用户信息
+     * @return 聊天记录
+     */
+    @ApiOperation("根据条件查询消息记录")
+    @GetMapping("/get/oldMessage")
+    public BaseResponse<List<TeamMessageVO>> selectTeamMessage(HistoryTeamMessageDTO historyTeamMessageDTO, HttpServletRequest request){
+        judgeTeamId(historyTeamMessageDTO.getTeamId());
+        User loginUser = userService.getLoginUser(request);
+        return ResultUtils.success(messageTeamService.getMessageByIdAndTime(historyTeamMessageDTO,loginUser));
+    }
+
+
+    /**
      * 判断队伍id是否符合要求
      *
      * @param teamId 队伍Id
@@ -73,6 +91,7 @@ public class MessageTeamController {
             throw new BusinessException(ErrorCode.NULL_ERROR,"请求数据为空");
         }
     }
+
 
 
 }

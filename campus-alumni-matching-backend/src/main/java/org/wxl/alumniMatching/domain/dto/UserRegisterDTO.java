@@ -12,7 +12,7 @@ public class UserRegisterDTO {
     /**
      * 手机号
      */
-    private String phone;
+    private String userPhone;
 
     /**
      * 用户密码

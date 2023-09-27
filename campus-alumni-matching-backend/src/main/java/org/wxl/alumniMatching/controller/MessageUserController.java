@@ -17,6 +17,7 @@ import org.wxl.alumniMatching.service.IUserService;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * @author 16956
@@ -92,14 +93,14 @@ public class MessageUserController {
     }
 
     /**
-     * 获取所有信息
+     * 获取所有信息（一次）
      *
      * @param request 当前登录用户
      * @return 未读信息列表
      */
     @ApiOperation("获取所有信息")
     @GetMapping("/get/notRead")
-    public BaseResponse<List<NotReadMessageVO>> getAllNotReadMessage(HttpServletRequest request){
+    public BaseResponse<TreeSet<NotReadMessageVO>> getAllNotReadMessage(HttpServletRequest request){
         User loginUser = userService.getLoginUser(request);
         return ResultUtils.success(messageUserService.getAllNotReadMessage(loginUser));
     }

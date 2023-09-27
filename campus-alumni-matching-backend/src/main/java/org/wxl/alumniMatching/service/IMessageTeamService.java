@@ -1,5 +1,6 @@
 package org.wxl.alumniMatching.service;
 
+import org.wxl.alumniMatching.domain.dto.HistoryTeamMessageDTO;
 import org.wxl.alumniMatching.domain.entity.MessageTeam;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.wxl.alumniMatching.domain.entity.User;
@@ -43,4 +44,13 @@ public interface IMessageTeamService extends IService<MessageTeam> {
      * @return 是否删除成功
      */
     Boolean deleteTeamMessage(Long teamId, Long userId);
+
+    /**
+     * 根据条件查询群聊天记录
+     *
+     * @param historyTeamMessageDTO 时间和聊天内容和队伍id
+     * @param loginUser 当前登录用户
+     * @return 群聊天记录
+     */
+    List<TeamMessageVO> getMessageByIdAndTime(HistoryTeamMessageDTO historyTeamMessageDTO, User loginUser);
 }

@@ -1,7 +1,7 @@
 <template>
     <van-space direction="vertical" fill v-for="message in messageList">
         <van-cell :border="false" is-link center
-            @click="toUserChatRoom(message.sendUserId === userId ? message.receiveUserId : message.sendUserId)">
+            @click="toUserChatRoom(message.sendUserId === userId ? message.receiveUserId : message.sendUserId)" v-if="message.teamId === null">
             <template #title>
                 <!-- 用户卡片 -->
                 <van-row :wrap="false" align="center">
@@ -32,6 +32,38 @@
             </template>
             <!-- 右侧内容 -->
         </van-cell>
+        <van-cell :border="false" is-link center
+            @click="toTeamChatRoom(message.teamId)" v-else>
+            <template #title>
+                <!-- 用户卡片 -->
+                <van-row :wrap="false" align="center">
+                    <!-- 左侧头像 -->
+                    <van-col>
+                        <van-image :src="message.teamAvatar"
+                            fit="cover" height="60px" round width="60px" />
+                    </van-col>
+                    <!-- 右侧信息 -->
+                    <van-col offset="1">
+                        <!-- 昵称 -->
+                        <div class="teamName" style="display: flex; justify-content: space-between;">
+                            <div class="teamName" style="margin-right: 50px;">
+                                {{ message.teamName }}
+                            </div>
+                            <div class="sendTime">
+                                {{ formatTime(message.sendTime) }}
+                            </div>
+                        </div>
+                        <!-- 消息 -->
+                        <div class="profile"
+                            style="color: rgb(145, 147, 149);text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                           {{ message.sendUserName }} : {{ truncate(message.content,15, '...') }}
+                            <van-icon badge="99+" style="margin-left: 140px;" v-if="message.status === 0"/>
+                        </div>
+                    </van-col>
+                </van-row>
+            </template>
+            <!-- 右侧内容 -->
+        </van-cell>
     </van-space>
     <van-empty v-if="(!messageList || messageList.length < 1)" description="暂无消息记录" />
 </template>
@@ -47,6 +79,7 @@ const messageList = ref([])
 const currentUser = ref(null);
 const userId = ref(0);
 const router = useRouter();
+
 
 
 onMounted(async () => {
@@ -69,7 +102,11 @@ const toUserChatRoom = (friendId: number) => {
         path: '/user/chatRoom/' + friendId,
     });
 }
-
+const toTeamChatRoom = (teamId : number) =>{
+    router.push({
+        path: '/team/chatRoom/' + teamId,
+    });
+}
 
 
 const formatTime = (time: string | number | Date) => {
@@ -94,4 +131,11 @@ const formatTime = (time: string | number | Date) => {
     }
 }
 
+const truncate = (value :string, maxLength:number, suffix:string) => {
+  if (value.length > maxLength) {
+    return value.substring(0, maxLength) + suffix;
+  } else {
+    return value;
+  }
+};
 </script>

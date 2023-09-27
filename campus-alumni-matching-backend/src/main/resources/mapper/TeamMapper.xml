@@ -53,5 +53,12 @@
         WHERE is_delete = 0 AND expire_time is not null and DATEDIFF(expire_time, NOW()) &lt;= 7;
     </select>
 
+    <select id="selectUserJoinTeamId" resultType="java.lang.Long">
+        select team_id from tb_user_team where user_id = #{loginUserId} and is_delete = 0;
+    </select>
+    <select id="selectTeamNameAndAvatar" resultType="org.wxl.alumniMatching.domain.entity.Team">
+        select id,team_name,avatar_url from tb_team where id = #{teamId};
+    </select>
+
 
 </mapper>

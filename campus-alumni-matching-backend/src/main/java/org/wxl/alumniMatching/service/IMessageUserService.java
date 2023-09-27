@@ -9,6 +9,7 @@ import org.wxl.alumniMatching.domain.vo.MessageUserVO;
 import org.wxl.alumniMatching.domain.vo.NotReadMessageVO;
 
 import java.util.List;
+import java.util.TreeSet;
 
 /**
  * <p>
@@ -69,5 +70,5 @@ public interface IMessageUserService extends IService<MessageUser> {
      * @param loginUser 当前登录用户
      * @return 未读信息列表
      */
-    List<NotReadMessageVO> getAllNotReadMessage(User loginUser);
+    TreeSet<NotReadMessageVO> getAllNotReadMessage(User loginUser);
 }

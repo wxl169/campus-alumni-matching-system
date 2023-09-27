@@ -13,9 +13,9 @@
 
         <div class="content_box">
             <div v-for="message in teamMessages">
-                <div class="userbox" v-if="message.sendUserId === id ">
+                <div class="userbox" v-if="(message.position === 'right' && message.sendUserId == userId.value) || message.current">
                     <div class="nameInfo">
-                        {{ username }}
+                        {{ username }}<br>
                         <div class="contentText">
                             {{ message.content }}
                         </div>
@@ -27,13 +27,13 @@
 
                 <div class="userbox2" v-else>
                     <div class="nameInfo2">
-                        {{ message.sendUserName }}
+                        {{ message.sendUserName }}<br>
                         <div class="contentText2">
                             {{ message.content }}
                         </div>
                     </div>
                     <div>
-                        <van-image style="z-index: 1" width="40px" height="40px" :src="message.sendUserAvatarUrl" />
+                        <van-image style="z-index: 1" width="40px" height="40px" :src="message.sendUserAvatar" />
                     </div>
                 </div>
             </div>
@@ -69,7 +69,7 @@ const teamName = ref("");
 const currentUser = ref(null);
 const teamById = ref(null);
 const teamId = route.params.id
-const id = ref(0);
+const userId = ref(0);
 const username = ref("");
 const avatarUrl = ref("");
 /**
@@ -82,7 +82,7 @@ const websocket = new WebSocket('ws://localhost:8080/api/messageTeam'); // 替�
 
 onMounted(async () => {
     currentUser.value = await getCurrentUser();
-    id.value = currentUser.value.id
+    userId.value = currentUser.value.id
     username.value = currentUser.value.username;
     teamById.value = await getTeamById(teamId);
     teamName.value = teamById.value.teamName;
@@ -122,6 +122,7 @@ const sendMessageTeam = () => {
     const newMessageTeam = {
         teamId: teamId,
         content: inputMessageTeam.value,
+        position: 'right',
     };
     // 将消息添加到当前用户的消息列表中
     if (Array.isArray(teamMessages.value)) {

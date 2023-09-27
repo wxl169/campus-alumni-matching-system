@@ -20,6 +20,7 @@ import MessageHome from "../pages/message/MessageHome.vue";
 import UserChatRoomPage from "../pages/user/UserChatRoomPage.vue";
 import UserSetup from "../pages/user/UserSetup.vue";
 import UserMessageLog from "../pages/user/UserMessageLog.vue";
+import TeamMessageLog from "../pages/team/TeamMessageLogPage.vue";
 // 2. 定义一些路由
 const routes = [
     { path: '/', title: '学友匹配', meta:{showBottom: true, showHeader: true, showBack: false,showRight:true}, component: Index },
@@ -37,6 +38,7 @@ const routes = [
     { path: '/user/details', title: '个人资料',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserDetailsPage},
     { path: '/user/setUp', title:'用户设置', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserSetup},
     { path: '/user/message/log', title:'聊天记录', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserMessageLog},
+    { path: '/team/message/log', title:'聊天记录', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: TeamMessageLog},
     { path: '/user/chatRoom/:id',meta:{showBottom: false, showHeader: false, showBack: false,showRight:false}, component: UserChatRoomPage},
     { path: '/team/add', title: '创建队伍',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: TeamAddPage},
     { path: '/team/update', title: '更新队伍', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false},component: TeamUpdatePage},

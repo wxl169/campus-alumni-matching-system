@@ -7,13 +7,13 @@ import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.contant.MessageConstant;
 import org.wxl.alumniMatching.domain.dto.HistoryMessageDTO;
 import org.wxl.alumniMatching.domain.dto.SendMessageDTO;
-import org.wxl.alumniMatching.domain.entity.MessageUser;
-import org.wxl.alumniMatching.domain.entity.User;
+import org.wxl.alumniMatching.domain.entity.*;
+import org.wxl.alumniMatching.domain.vo.MessageTeamLogVO;
+import org.wxl.alumniMatching.domain.vo.MessageTeamVO;
 import org.wxl.alumniMatching.domain.vo.MessageUserVO;
 import org.wxl.alumniMatching.domain.vo.NotReadMessageVO;
 import org.wxl.alumniMatching.exception.BusinessException;
-import org.wxl.alumniMatching.mapper.MessageUserMapper;
-import org.wxl.alumniMatching.mapper.UserMapper;
+import org.wxl.alumniMatching.mapper.*;
 import org.wxl.alumniMatching.service.IMessageUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -37,6 +37,10 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
     private UserMapper userMapper;
     @Resource
     private MessageUserMapper messageUserMapper;
+    @Resource
+    private MessageTeamMapper messageTeamMapper;
+    @Resource
+    private TeamMapper teamMapper;
 
 
     @Override
@@ -75,7 +79,7 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
         }
         Long friendId = historyMessageDTO.getFriendId();
         if (friendId.equals(loginUser.getId())){
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"禁止给自己发信息");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"请选择好友");
         }
         //查看接收者是否在数据库中
         User friend = userMapper.selectById(friendId);
@@ -129,8 +133,9 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
     @Override
     public List<MessageUserVO> getRecentMessage(Long friendId, User loginUser) {
         judgeMessage(friendId,loginUser);
-        //查看最近的消息记录
+        //查看用户与用户之间最近的消息记录
         List<MessageUser> messageUserList = messageUserMapper.selectRecentMessage(friendId,loginUser.getId());
+
         //将消息脱敏
         List<MessageUserVO> messageUserVOList = BeanCopyUtils.copyBeanList(messageUserList, MessageUserVO.class);
 
@@ -164,7 +169,7 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
     }
 
     @Override
-    public List<NotReadMessageVO> getAllNotReadMessage(User loginUser) {
+    public TreeSet<NotReadMessageVO> getAllNotReadMessage(User loginUser) {
         //获取所有的消息记录，未读的展示在最前面，然后按时间顺序降序排序
         //1.获取所有的消息记录，然后时间降序排列
         Long loginUserId = loginUser.getId();
@@ -173,9 +178,8 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
         messageUserList = messageUserList.stream().filter(Objects::nonNull).collect(Collectors.toList());
 
         //如果为空，则返回null
-        if (messageUserList.size() == 0){
-            return null;
-        }else if (messageUserList.size() > 1){
+        List<NotReadMessageVO> notReadMessageVOS = null;
+        if (messageUserList.size() > 1){
             //如果是一条以上，则需要筛选出是发送人和接收人相互发送的信息，并选出最近时间的信息
             // 由于正序可能会导致后面的元素会向前移动，导致索引发生变化，可能会导致未能正确地遍历所有元素，所有选择倒序
             for (int i = messageUserList.size() - 1; i > 0; i--){
@@ -203,26 +207,71 @@ public class MessageUserServiceImpl extends ServiceImpl<MessageUserMapper, Messa
                     }
                 }
             }
+            //存入用户之间的聊天记录
+            notReadMessageVOS = BeanCopyUtils.copyBeanList(messageUserList, NotReadMessageVO.class);
+            //注入用户名，头像
+            notReadMessageVOS = notReadMessageVOS.stream().peek(message ->{
+                User user;
+                //如果是当前登录用户发送
+                if (loginUserId.equals(message.getSendUserId())){
+                    //将接收人的名字,头像输入
+                    user = userMapper.selectNameAndAvatar(message.getReceiveUserId());
+                    message.setReceiveUserName(user.getUsername());
+                    message.setReceiveUserAvatar(user.getAvatarUrl());
+                    message.setStatus(MessageConstant.READ_MESSAGE);
+                }else{
+                    //将发送人的名字和头像输入
+                    user = userMapper.selectNameAndAvatar(message.getSendUserId());
+                    message.setSendUserName(user.getUsername());
+                    message.setSendUserAvatar(user.getAvatarUrl());
+                }
+            }).collect(Collectors.toList());
         }
-        List<NotReadMessageVO> notReadMessageVOS = BeanCopyUtils.copyBeanList(messageUserList, NotReadMessageVO.class);
-        //注入用户名，头像
-        notReadMessageVOS = notReadMessageVOS.stream().peek(message ->{
-            User user;
-            //如果是当前登录用户发送
-            if (loginUserId.equals(message.getSendUserId())){
-                //将接收人的名字,头像输入
-                 user = userMapper.selectNameAndAvatar(message.getReceiveUserId());
-                 message.setReceiveUserName(user.getUsername());
-                 message.setReceiveUserAvatar(user.getAvatarUrl());
-                 message.setStatus(MessageConstant.READ_MESSAGE);
-            }else{
-                //将发送人的名字和头像输入
-                user = userMapper.selectNameAndAvatar(message.getSendUserId());
-                message.setSendUserName(user.getUsername());
-                message.setSendUserAvatar(user.getAvatarUrl());
-            }
-        }).collect(Collectors.toList());
-        return notReadMessageVOS;
+
+
+        //找出当前用户加入群聊中最后一次发言
+        //1. 找出当前用户加入的队伍
+        Set<Long> teamIds = teamMapper.selectUserJoinTeamId(loginUserId);
+        List<NotReadMessageVO> collect = null;
+        //2. 如果当前用户没有加入队伍，则只返回与用户之间的消息，如果有则查询队伍中的消息记录
+        if (teamIds.size() != 0){
+            //3. 根据队伍id查询最近的聊天记录，如果没有则不显示
+            List<MessageTeamLogVO> messageTeamUsers = messageTeamMapper.selectRecentMessage(teamIds,loginUserId);
+            //4. 根据send_user_id判断 如果发送人是本人 则 表示已读，如果不是本人则判断读未读
+                collect = messageTeamUsers.stream().map(messageTeamLogVO -> {
+                NotReadMessageVO notReadMessageVO = new NotReadMessageVO();
+                notReadMessageVO.setSendTime(messageTeamLogVO.getSendTime());
+                notReadMessageVO.setContent(messageTeamLogVO.getContent());
+                notReadMessageVO.setStatus(messageTeamLogVO.getStatus());
+                notReadMessageVO.setTeamId(messageTeamLogVO.getTeamId());
+                notReadMessageVO.setSendUserId(messageTeamLogVO.getSendUserId());
+                //查询队伍名
+                Team team = teamMapper.selectTeamNameAndAvatar(messageTeamLogVO.getTeamId());
+                notReadMessageVO.setTeamAvatar(team.getAvatarUrl());
+                notReadMessageVO.setTeamName(team.getTeamName());
+                //查询发送消息信息
+                 User user = userMapper.selectNameAndAvatar(messageTeamLogVO.getSendUserId());
+                 notReadMessageVO.setSendUserName(user.getUsername());
+                 notReadMessageVO.setSendUserAvatar(user.getAvatarUrl());
+                return notReadMessageVO;
+            }).collect(Collectors.toList());
+        }
+        // 定义一个Comparator对象来定义排序规则
+        Comparator<NotReadMessageVO> comparator = (o1, o2) -> {
+            // 按照send_time从大到小排序
+            return o2.getSendTime().compareTo(o1.getSendTime());
+        };
+        // 创建一个TreeSet，并传入Comparator对象
+        TreeSet<NotReadMessageVO> treeSet = new TreeSet<>(comparator);
+        // 添加元素到treeSet
+
+        if (notReadMessageVOS != null && notReadMessageVOS.size() != 0){
+            treeSet.addAll(notReadMessageVOS);
+        }
+        if (collect != null && collect.size() != 0){
+            treeSet.addAll(collect);
+        }
+        return treeSet;
     }
 
 

@@ -8,6 +8,7 @@ import org.wxl.alumniMatching.domain.vo.UserShowVO;
 import org.wxl.alumniMatching.domain.vo.UserTagVO;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -44,9 +45,26 @@ public interface TeamMapper extends BaseMapper<Team> {
 
     /**
      * 查询所有设置了过期时间的队伍
+     *
      * @return 队伍列表
      */
     List<Team> selectHavingExpireTime();
 
+
+    /**
+     * 获取当前登录用户加入队伍的id集合
+     *
+     * @param loginUserId 当前登录用户
+     * @return 返回当前登录用户加入队伍id集合
+     */
+    Set<Long> selectUserJoinTeamId(Long loginUserId);
+
+    /**
+     * 查询队伍名和头像
+     *
+     * @param teamId 队伍id
+     * @return 返回队伍名和头像
+     */
+    Team selectTeamNameAndAvatar(Long teamId);
 
 }

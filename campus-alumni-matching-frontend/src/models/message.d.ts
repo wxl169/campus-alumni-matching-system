@@ -1,8 +1,8 @@
 
 
-//队伍类型
+//消息类型
 export type MessageType = {
-sendUserName: any;
+    sendUserName: any;
     id : number;
     content: string;
     status : number;
@@ -13,5 +13,13 @@ sendUserName: any;
     isSystem : number;
 }
 
+
+export type TeamMessageType = {
+    sendUserName : string;
+    sendTime : Date;
+    sendUserId : number;
+    content : any;
+    sendUserAvatar : string;
+}
 
 

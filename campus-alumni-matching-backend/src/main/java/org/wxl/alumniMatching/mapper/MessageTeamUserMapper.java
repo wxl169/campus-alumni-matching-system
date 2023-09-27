@@ -1,7 +1,12 @@
 package org.wxl.alumniMatching.mapper;
 
+import org.apache.ibatis.annotations.Param;
 import org.wxl.alumniMatching.domain.entity.MessageTeamUser;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.wxl.alumniMatching.domain.vo.MessageTeamVO;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * <p>
@@ -20,5 +25,6 @@ public interface MessageTeamUserMapper extends BaseMapper<MessageTeamUser> {
      * @param userId 用户id
      * @return 是否删除成功
      */
-    boolean deleteMessageTeamUser(Long teamId, Long userId);
+    boolean deleteMessageTeamUser(@Param("teamId") Long teamId,@Param("userId") Long userId);
+
 }

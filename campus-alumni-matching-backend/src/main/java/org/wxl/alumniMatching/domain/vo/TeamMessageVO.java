@@ -3,6 +3,7 @@ package org.wxl.alumniMatching.domain.vo;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author 16956
@@ -23,4 +24,5 @@ public class TeamMessageVO implements Serializable {
     private String position;
     private String sendUserName;
     private String sendUserAvatar;
+    private LocalDateTime sendTime;
 }

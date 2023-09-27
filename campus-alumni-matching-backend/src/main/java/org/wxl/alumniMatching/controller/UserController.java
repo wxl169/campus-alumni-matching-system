@@ -48,7 +48,7 @@ public class UserController {
         }
         String userAccount = userRegisterDto.getUserAccount();
         String userPassword = userRegisterDto.getUserPassword();
-        String phone = userRegisterDto.getPhone();
+        String phone = userRegisterDto.getUserPhone();
         String checkPassword = userRegisterDto.getCheckPassword();
 
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
@@ -61,7 +61,7 @@ public class UserController {
         if (result > 0){
            return ResultUtils.success(true);
         }
-        return ResultUtils.error(ErrorCode.SYSTEM_ERROR,"登录失败");
+        return ResultUtils.error(ErrorCode.SYSTEM_ERROR,"注册失败");
     }
 
     /**

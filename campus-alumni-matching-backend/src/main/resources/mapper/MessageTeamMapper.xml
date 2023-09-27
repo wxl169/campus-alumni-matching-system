@@ -42,4 +42,93 @@
              ) AS merged_table
         ORDER BY send_time ASC;
     </select>
+
+    <select id="selectTeamMessageAll" resultType="org.wxl.alumniMatching.domain.entity.MessageTeam"
+            parameterType="java.lang.Long">
+        SELECT *
+        FROM (
+                 SELECT mt.content, mt.send_user_id, mt.send_time
+                 FROM tb_message_team AS mt
+                          JOIN tb_message_team_user AS mtu ON mt.id = mtu.message_team_id
+                 WHERE mt.team_id = #{teamId}
+                   AND mt.is_delete = 0
+                   AND mtu.is_delete = 0
+                   AND mtu.receive_user_id = #{userId}
+                 UNION
+                 SELECT t2.content, t2.send_user_id, t2.send_time
+                 FROM tb_message_team AS t2
+                 WHERE t2.is_delete = 0
+                   AND t2.message_show = 0
+                   AND t2.team_id = #{teamId}
+                   And t2.send_user_id = #{userId}
+             ) AS merged_table
+        ORDER BY send_time ASC;
+    </select>
+
+    <select id="selectTeamMessageBySendTime" resultType="org.wxl.alumniMatching.domain.entity.MessageTeam"
+            parameterType="java.lang.String">
+        SELECT *
+        FROM (
+                 SELECT mt.content, mt.send_user_id, mt.send_time
+                 FROM tb_message_team AS mt
+                          JOIN tb_message_team_user AS mtu ON mt.id = mtu.message_team_id
+                 WHERE mt.team_id = #{teamId}
+                   AND mt.is_delete = 0
+                   AND mtu.is_delete = 0
+                   AND mtu.receive_user_id = #{userId}
+                 UNION
+                 SELECT t2.content, t2.send_user_id, t2.send_time
+                 FROM tb_message_team AS t2
+                 WHERE t2.is_delete = 0
+                   AND t2.message_show = 0
+                   AND t2.team_id = #{teamId}
+                   And t2.send_user_id = #{userId}
+             ) AS merged_table
+        where
+            1 = 1
+        <if test="content != null and content != ''">
+            and content like CONCAT('%',#{content},'%')
+        </if>
+
+        <if test="sendTime != null and sendTime != ''">
+            AND DATE(send_time) = DATE(#{sendTime})
+        </if>
+        ORDER BY send_time ASC;
+    </select>
+
+    <select id="selectRecentMessage" resultType="org.wxl.alumniMatching.domain.vo.MessageTeamLogVO">
+
+        SELECT group_message.content, group_message.send_user_id, group_message.send_time, group_message.team_id,group_message.`status`
+        FROM
+            (
+            SELECT user_all_message.content, user_all_message.send_user_id, user_all_message.send_time, user_all_message.team_id,user_all_message.`status`,
+                       ROW_NUMBER() OVER (PARTITION BY user_all_message.team_id ORDER BY user_all_message.send_time DESC) AS rn
+            FROM
+                    (
+                        SELECT mt.content, mt.send_user_id, mt.send_time, mt.team_id,mtu.`status`
+                        FROM tb_message_team AS mt
+                                 JOIN tb_message_team_user AS mtu ON mt.id = mtu.message_team_id
+                        WHERE mt.team_id IN
+                    <foreach collection="teamIds" index = "index" item = "teamId" open="(" separator="," close=")">
+                            ${teamId}
+                    </foreach>
+                        AND mt.is_delete = 0
+                        AND mtu.is_delete = 0
+                        AND mtu.receive_user_id = #{loginUserId}
+                UNION
+                        SELECT t2.content, t2.send_user_id, t2.send_time, t2.team_id,'1' as status
+                                FROM tb_message_team AS t2
+                        WHERE t2.is_delete = 0
+                        AND t2.message_show = 0
+                        AND t2.team_id IN
+                    <foreach collection="teamIds" index = "index" item = "teamId" open="(" separator="," close=")">
+                            ${teamId}
+                    </foreach>
+                        AND t2.send_user_id = #{loginUserId}
+                ) AS user_all_message
+            ) AS group_message
+        WHERE group_message.rn = 1;
+
+    </select>
+
 </mapper>

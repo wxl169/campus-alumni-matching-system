@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.springframework.transaction.annotation.Transactional;
 import org.wxl.alumniMatching.common.ErrorCode;
 import org.wxl.alumniMatching.contant.MessageConstant;
+import org.wxl.alumniMatching.domain.dto.HistoryTeamMessageDTO;
 import org.wxl.alumniMatching.domain.entity.MessageTeam;
 import org.wxl.alumniMatching.domain.entity.MessageTeamUser;
+import org.wxl.alumniMatching.domain.entity.MessageUser;
 import org.wxl.alumniMatching.domain.entity.User;
 import org.wxl.alumniMatching.domain.vo.MessageTeamVO;
 import org.wxl.alumniMatching.domain.vo.TeamMessageVO;
@@ -118,6 +120,46 @@ private UserMapper userMapper;
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"删除群消息失败");
         }
         return true;
+    }
+
+
+    @Override
+    public List<TeamMessageVO> getMessageByIdAndTime(HistoryTeamMessageDTO historyTeamMessageDTO, User loginUser) {
+        if (historyTeamMessageDTO.getTeamId() == null || historyTeamMessageDTO.getTeamId()  <= 0){
+            throw new BusinessException(ErrorCode.NULL_ERROR,"请选择群聊");
+        }
+        //如果没有条件，则查询所有人的消息记录
+        List<MessageTeam> teamMessageList;
+        if (historyTeamMessageDTO.getSendTime() == null && historyTeamMessageDTO.getContent() == null){
+            teamMessageList =  messageTeamMapper.selectTeamMessageAll(historyTeamMessageDTO.getTeamId(),loginUser.getId());
+        }else{
+            //如果选择了查询时间或内容
+            teamMessageList = messageTeamMapper.selectTeamMessageBySendTime(historyTeamMessageDTO.getSendTime(), historyTeamMessageDTO.getContent(), historyTeamMessageDTO.getTeamId(),loginUser.getId());
+        }
+
+        List<TeamMessageVO> teamMessageVOS = BeanCopyUtils.copyBeanList(teamMessageList, TeamMessageVO.class);
+        //将发送消息的用户id存入集合中
+        Set<Long> userId = new HashSet<>();
+        teamMessageVOS.forEach(messageTeam -> {
+            userId.add(messageTeam.getSendUserId());
+        });
+        //如果没有用户则表示没有消息发出，返回空
+        if(userId.size() == 0){
+            return null;
+        }
+        //如果有则根据id查出用户的姓名和头像
+        List<User> users = userMapper.selectBatchIds(userId);
+        //遍历消息集合，将每条消息传入用户的头像和姓名
+        teamMessageVOS = teamMessageVOS.stream().peek(messageTeam -> {
+            for (User user : users) {
+                if (messageTeam.getSendUserId().equals(user.getId())){
+                    messageTeam.setSendUserName(user.getUsername());
+                    messageTeam.setSendUserAvatar(user.getAvatarUrl());
+                }
+            }
+        }).collect(Collectors.toList());
+
+        return teamMessageVOS;
     }
 
 

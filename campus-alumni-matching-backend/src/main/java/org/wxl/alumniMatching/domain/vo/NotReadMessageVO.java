@@ -20,7 +20,6 @@ public class NotReadMessageVO implements Serializable {
     private String sendUserName;
     @ApiModelProperty(value = "发送人头像")
     private String sendUserAvatar;
-
     @ApiModelProperty(value = "接收人id")
     private Long receiveUserId;
     @ApiModelProperty(value = "接收人姓名")
@@ -33,4 +32,10 @@ public class NotReadMessageVO implements Serializable {
     private Integer status;
     @ApiModelProperty(value = "发送时间")
     private LocalDateTime sendTime;
+    @ApiModelProperty("队伍id")
+    private Long teamId;
+    @ApiModelProperty("队伍头像")
+    private String teamAvatar;
+    @ApiModelProperty("队伍名")
+    private String teamName;
 }

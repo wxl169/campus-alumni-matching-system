@@ -109,7 +109,7 @@ const afterRead = async (file) => {
     if (response.code === 0) {
       addTeamData.value.avatarUrl = response.data
     } else {
-        if (res.description == "") {
+        if (res.description === "" || res.description == null) {
             showFailToast("上传失败");
         } else {
             showFailToast(res.description);

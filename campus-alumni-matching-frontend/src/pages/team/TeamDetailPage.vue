@@ -25,6 +25,8 @@
             <van-cell center title="过期时间" :value="expireTime" v-if="expireTime != null" />
             <van-cell center title="过期时间" value="暂未设置过期时间" v-if="expireTime == null" />
             <van-cell title="我在群里的昵称" :value="username" size="large" />
+            <van-cell title="查看聊天记录" is-link style="margin-top: 10px;" @click="selectTeamMessage(teamId)" />
+            <van-cell title="删除聊天记录" is-link @click="deleteTeamMessage(teamId)" />
             <van-space direction="vertical" fill style="margin-top: 20px;">
                 <van-cell title="修改队伍信息" is-link  v-if="leaderId === currentUser?.id" @click="toUpdateTeam(teamId)"/>
                 <van-cell title="解散队伍"  is-link  @click="doDeleteTeam(teamId)" v-if="leaderId === currentUser?.id"/>
@@ -40,8 +42,7 @@ import { getCurrentUser } from "../../services/user";
 import { getTeamById } from "../../services/team";
 import { onMounted, ref } from "vue";
 import myAxios from "../../plugins/myAxios";
-import { showFailToast } from 'vant';
-import { showConfirmDialog } from 'vant';
+import { showConfirmDialog, showFailToast, showSuccessToast } from 'vant';
 
 const router = useRouter()
 const route = useRoute()
@@ -155,6 +156,41 @@ const doDeleteTeam = async (teamId: number) => {
 
  }
 
+//删除聊天记录
+const deleteTeamMessage = async (teamId: number) => {
+  showConfirmDialog({
+    title: '确认要清除聊天记录吗',
+  })
+    .then(async () => {
+        const res = await myAxios({
+      url: '/message/team/delete',
+      method: "put",
+      params: {
+        teamId: teamId
+      },
+    });
+      if (res.code === 0 && res.data === true) {
+        showSuccessToast("清空聊天记录成功");
+      } else {
+        showFailToast(res.description);
+      }
+    })
+    .catch(() => {
+      showFailToast('取消操作');
+    });
+}
+
+/**
+ * 查看聊天记录
+ */
+ const selectTeamMessage = (teamId: number) => {
+  router.push({
+    path: '/team/message/log',
+    query: {
+        teamId
+    }
+  });
+};
 </script>
     
     
