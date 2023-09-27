@@ -3,6 +3,8 @@
         <van-cell-group inset>
             <van-field v-model="userAccount" name="账号" label="账号" placeholder="账号"
                 :rules="[{ required: true, message: '请填写5~10位的账号' }]" />
+            <van-field v-model="userPhone" name="手机号" label="手机号" placeholder="请输入手机号"
+                :rules="[{ required: true, message: '手机号格式错误' }]" />
             <van-field v-model="userPassword" type="password" name="密码" label="密码" placeholder="密码"
                 :rules="[{ required: true, message: '请填写8~15位的密码' }]" />
             <van-field v-model="checkPassword" type="password" name="确认密码" label="确认密码" placeholder="确认密码"
@@ -26,6 +28,7 @@ import { showFailToast,showSuccessToast } from 'vant';
 const userAccount = ref('');
 const userPassword = ref('');
 const checkPassword = ref('');
+const userPhone = ref('');
 const router = useRouter();
 
 
@@ -33,7 +36,8 @@ const onSubmit = async () => {
     const res = await myAxios.post("/user/register", {
             userAccount: userAccount.value,
             userPassword: userPassword.value,
-            checkPassword: checkPassword.value
+            checkPassword: checkPassword.value,
+            userPhone : userPhone.value,
     });
     if (res?.code === 0) {
         showSuccessToast('注册成功');
