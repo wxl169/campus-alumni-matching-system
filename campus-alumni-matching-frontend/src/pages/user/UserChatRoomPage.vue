@@ -89,8 +89,9 @@ onMounted(async () => {
 const messages = ref([]);
 const inputMessage = ref('');
 
-const websocket = new WebSocket('ws://localhost:8080/api/message'); // 替换为你的WebSocket服务器地址
-
+// 替换为你的WebSocket服务器地址
+// const websocket = new WebSocket('wss://www.cqiewxl.cn:8888/api/message');
+const websocket = new WebSocket('ws://localhost:8080/api/message'); 
 /**
  * 
  * @param event 接收对方发送的消息

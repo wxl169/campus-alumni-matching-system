@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import javafx.util.Pair;
+import cn.hutool.core.lang.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.redisson.api.RLock;
@@ -24,7 +24,6 @@ import org.wxl.alumniMatching.domain.enums.TeamStatusEnum;
 import org.wxl.alumniMatching.domain.vo.*;
 import org.wxl.alumniMatching.exception.BusinessException;
 import org.wxl.alumniMatching.mapper.TeamMapper;
-import org.wxl.alumniMatching.service.IMessageUserService;
 import org.wxl.alumniMatching.service.ITeamService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
@@ -55,8 +54,6 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team> implements IT
     private IUserService userService;
     @Resource
     private TeamMapper teamMapper;
-    @Resource
-    private IMessageUserService messageUserService;
     @Resource
     private RedissonClient redissonClient;
 

@@ -1,13 +1,8 @@
 # Docker 镜像构建
-FROM maven:3.5-jdk-8-alpine as builder
+FROM openjdk:8
+VOLUME /tmp
+ADD campus-alumni-matching-backend-0.0.1-SNAPSHOT.jar springboot-docker.jar
+RUN bash -c 'touch /springboot-docker.jar'
+ENTRYPOINT ["java","-Djava.security.egd=file:/prod/./urandom","-jar","/springboot-docker.jar","--spring.profiles.active=prod","-c"]
+EXPOSE 8888
 
-# Copy local code to the container image.
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-
-# Build a release artifact.
-RUN mvn package -DskipTests
-
-# Run the web service on container startup.
-CMD ["java","-jar","/app/target/campus-alumni-matching-backend-0.0.1-SNAPSHOT.jar","--spring.profiles.active=prod"]

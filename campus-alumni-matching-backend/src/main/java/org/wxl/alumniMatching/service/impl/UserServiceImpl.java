@@ -456,12 +456,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         }
         //查询所有标签不为空，状态正常
         List<User> userList = userMapper.getMatchUsers(loginUser.getId());
+        if (userList.size() == 0){
+            return  null;
+        }
         //将自己关注的用户排除
         User user1 = this.getById(loginUser.getId());
         String friends = user1.getFriends();
         Gson gson = new Gson();
+        //当前登录用户的好友列表
         List<Long> friendIdList = gson.fromJson(friends,new TypeToken<List<Long>>(){}.getType());
         if (friendIdList != null){
+            //在匹配用户中排除自己的好友
             userList = userList.stream().filter(user -> {
                 for (Long userId : friendIdList) {
                     if (user.getId().equals(userId)) {
@@ -470,6 +475,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 }
                 return true;
             }).collect(Collectors.toList());
+        }
+        //如果排除好友后，userList为空，则直接返回
+        if (userList.size() == 0){
+            return  null;
         }
         //自己的标签
         String tags = user1.getTags();
@@ -494,6 +503,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             long distance = AlgorithmUtils.minDistance(tagList, userTagList);
             list.add(new Pair<>(user, distance));
         }
+        //如果集合中没有元素则直接返回
+        if (list.size() == 0){
+            return  null;
+        }
         //按编辑距离从小到大排序
         List<Pair<User,Long>> topUserPairList = list.stream().
                 sorted((a,b) -> (int)(a.getValue() - b.getValue()))
@@ -504,7 +517,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         // 原本顺序的 userId 列表
         List<Long> userIdList = topUserPairList.stream().map(pair -> pair.getKey().getId()).collect(Collectors.toList());
         LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
-       userQueryWrapper.in(User::getId,userIdList);
+        userQueryWrapper.in(User::getId,userIdList);
         // 1, 3, 2
         // User1、User2、User3
         // 1 => User1, 2 => User2, 3 => User3

@@ -77,8 +77,8 @@ const avatarUrl = ref("");
  */
  const teamMessages = ref([]);
 const inputMessageTeam = ref('');
-const websocket = new WebSocket('ws://localhost:8080/api/messageTeam'); // 替换为你的WebSocket服务器地址
-
+// const websocket = new WebSocket('wss://www.cqiewxl.cn:8888/api/messageTeam');
+const websocket = new WebSocket('ws://localhost:8080/api/messageTeam'); 
 
 onMounted(async () => {
     currentUser.value = await getCurrentUser();

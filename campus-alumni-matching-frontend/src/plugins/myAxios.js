@@ -3,7 +3,7 @@ import axios from "axios";
 const isDev = process.env.NODE_ENV === 'development';
 
 const myAxios = axios.create({
-    baseURL : isDev ? 'http://localhost:8080/api/' : 'http://42.193.15.245:8081/api/',
+    baseURL : isDev ? 'http://localhost:8080/api/' : 'https://www.cqiewxl.cn:8888/api/',
 })
 
 

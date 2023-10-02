@@ -52,7 +52,11 @@
                          and
                            is_delete = 0
                          and
-                           tags is not null and tags &lt;&gt; "" and tags &lt;&gt; "[]";
+                           tags is not null
+                         and
+                           tags &lt;&gt; "" and tags &lt;&gt; "[]"
+                         and
+                           id != #{userId};
     </select>
     <select id="selectAllUserHavingTag" resultType="org.wxl.alumniMatching.domain.entity.User">
         select id,username,user_account,avatar_url,`profile`,gender,tags

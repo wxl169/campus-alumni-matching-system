@@ -1,8 +1,8 @@
 spring:
   datasource:
     username: root
-    password: wu13145..
-    url: jdbc:mysql://gz-cynosdbmysql-grp-3k1ln4m3.sql.tencentcdb.com:23522/campus_alumni_matching?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    password: wu13145
+    url: jdbc:mysql://mysql:3306/campus_alumni_matching?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     driver-class-name: com.mysql.cj.jdbc.Driver
   web:
     resources:
@@ -16,10 +16,11 @@ spring:
 
   #redis
   redis:
-    host: 127.0.0.1
+    host: redis_6379
     port: 6379
     database: 0
     redisson_database : 1
+    password: wu13145
 
   #session 失效时间（分）
   session:
@@ -40,16 +41,23 @@ mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
 
 server:
-  port: 8081
+  port: 8888
   servlet:
     context-path: /api
     session:
       cookie:
-        comment: 127.0.0.1
+        comment: 47.113.229.30
         secure: true
         same-site: none
   address: 0.0.0.0
   reactive:
     session:
       cookie:
-        domain: localhost
+        domain: 47.113.229.30
+
+  #ssl证书配置
+  ssl:
+    enabled: true
+    key-store-password: l9kvn92h    #填写jks-password.txt文件内的密码。
+    key-store-type: JKS #JKS格式证书密钥库类型。PFX格式的证书密钥库类型为PKCS12。
+    key-store: classpath:ssl/www.cqiewxl.cn.jks   #您需要使用实际的证书名称替换domain_name.jks。
