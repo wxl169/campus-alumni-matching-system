@@ -13,18 +13,7 @@
 
         <div class="content_box">
             <div v-for="message in messages">
-                <div class="userbox2" v-if="message.receiveUserId === id">
-                    <div class="nameInfo2">
-                        <div class="contentText2">
-                            {{ message.content }}
-                        </div>
-                    </div>
-                    <div>
-                        <van-image style="z-index: 1" width="40px" height="40px" :src="friendAvatarUrl" />
-                    </div>
-                </div>
-
-                <div class="userbox" v-else>
+                <div class="userbox" v-if="message.receiveUserId == userId && message.sendUserId == id">
                     <div class="nameInfo">
                         <div class="contentText">
                             {{ message.content }}
@@ -32,6 +21,16 @@
                     </div>
                     <div>
                         <van-image style="z-index: 1" width="40px" height="40px" :src="avatarUrl" />
+                    </div>
+                </div>
+                <div class="userbox2" v-if="message.receiveUserId == id && message.sendUserId == userId">
+                    <div class="nameInfo2">
+                        <div class="contentText2">
+                            {{ message.content }}
+                        </div>
+                    </div>
+                    <div>
+                        <van-image style="z-index: 1" width="40px" height="40px" :src="friendAvatarUrl" />
                     </div>
                 </div>
             </div>
@@ -99,8 +98,11 @@ const websocket = new WebSocket('ws://localhost:8080/api/message');
 websocket.onmessage = async (event) => {
     const message = JSON.parse(event.data);
     messages.value.push(message);
-
-    //将消息设置为已读
+    console.log(userId)
+    console.log(id.value)
+    if(message.sendUserId == userId && message.receiveUserId == id.value){
+        console.log("运行了嘛")
+         //将消息设置为已读
     await myAxios({
         url: '/message/user/update/messageStatus',
         method: "put",
@@ -108,12 +110,15 @@ websocket.onmessage = async (event) => {
             friendId: userId
         },
     });
+    }
+   
 };
 
 
 const sendMessage = () => {
     const newMessage = {
-        toUserId: userId,
+        sendUserId: id.value,
+        receiveUserId: userId,
         content: inputMessage.value,
     };
     // 将消息添加到当前用户的消息列表中

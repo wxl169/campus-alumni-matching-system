@@ -33,4 +33,13 @@ public interface IMessageTeamUserService extends IService<MessageTeamUser> {
      * @param userId 用户id
      */
     boolean deleteTeamMessageUser(Long teamId, Long userId);
+
+    /**
+     * 将该队伍历史消息改为已读
+     *
+     * @param teamId 队伍id
+     * @param userId 当前登录用户id
+     * @return 是否修改成功
+     */
+     boolean updateTeamMessageUser(Long teamId,Long userId);
 }

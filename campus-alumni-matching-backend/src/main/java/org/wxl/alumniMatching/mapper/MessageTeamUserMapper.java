@@ -27,4 +27,12 @@ public interface MessageTeamUserMapper extends BaseMapper<MessageTeamUser> {
      */
     boolean deleteMessageTeamUser(@Param("teamId") Long teamId,@Param("userId") Long userId);
 
+    /**
+     * 修改当前队伍该用户之前的消息记录为已读
+     *
+     * @param teamId 队伍id
+     * @param userId 当前登录用户
+     * @return 是否修改成功
+     */
+    boolean updateTeamMessageStatus(@Param("teamId") Long teamId,@Param("userId") Long userId);
 }

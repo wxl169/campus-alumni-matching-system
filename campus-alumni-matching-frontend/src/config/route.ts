@@ -6,6 +6,7 @@ import User from "../pages/user/UserPage.vue";
 import UserEditPage from "../pages/user/UserEditPage.vue";
 import UserTeamPage from "../pages/user/UserTeamPage.vue";
 import SearchResultPage from "../pages/search/SearchResultPage.vue";
+import SearchUserPage from "../pages/search/SearchUserPage.vue";
 import UserHomePage from "../pages/user/UserHomePage.vue";
 import UserLoginPage from "../pages/user/UserLoginPage.vue";
 import UserRegisterPage from "../pages/user/UserRegisterPage.vue";
@@ -32,6 +33,7 @@ const routes = [
     { path: '/search', title: '搜索用户', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: SearchPage },
     { path: '/user/edit', title: '编辑信息',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserEditPage },
     { path: '/user/list', title: '用户列表', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false},component: SearchResultPage },
+    { path: '/user/list2', title: '用户列表', meta:{showBottom: false, showHeader: true, showBack: true,showRight:false},component: SearchUserPage },
     { path: '/user/home', title: '个人信息', meta:{showBottom: true, showHeader: true, showBack: false,showRight:false},component: UserHomePage},
     { path: '/user/login', title: '登录账号',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserLoginPage},
     { path: '/user/register', title: '注册账号',meta:{showBottom: false, showHeader: true, showBack: true,showRight:false}, component: UserRegisterPage},

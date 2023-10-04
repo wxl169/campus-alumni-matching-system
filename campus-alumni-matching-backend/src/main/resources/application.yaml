@@ -19,8 +19,15 @@ spring:
     port: 6379
     database: 0
     redisson_database : 1
+    lettuce:
+      pool:
+        max-wait: 5000ms #连接池最大阻塞等待时间
+        max-active: 14 #连接池最大连接数
+        max-idle: 10 #连接池中最大空闲连接
+        min-idle: 5 #连接池中的最小空闲连接
+    connect-timeout: 5000ms #连接超时时间（毫秒）
 
-#session 失效时间（分）
+  #session 失效时间（分）
   session:
     timeout: 86400
     store-type: redis

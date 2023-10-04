@@ -92,4 +92,9 @@ private MessageTeamUserMapper messageTeamUserMapper;
         //删除指定队伍和用户的消息记录
         return messageTeamUserMapper.deleteMessageTeamUser(teamId,userId);
     }
+
+
+    public boolean updateTeamMessageUser(Long teamId,Long userId){
+        return messageTeamUserMapper.updateTeamMessageStatus(teamId,userId);
+    }
 }

@@ -794,6 +794,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     }
 
+    @Override
+    public List<UserTagVO> selectConditionUser(String condition, User loginUser) {
+        //如果条件为空，则返回100条数据
+        List<User> list = new ArrayList<>();
+        if (StringUtils.isBlank(condition)){
+            PageVO pageVO = this.searchUserList(1, 100);
+             list = pageVO.getRows();
+        }else {
+            LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.select(User::getId,User::getUsername,User::getUserAccount,User::getAvatarUrl,User::getGender,User::getProfile,User::getTags);
+            queryWrapper.like(User::getUserAccount,condition)
+                    .or()
+                    .like(User::getUsername,condition)
+                    .eq(User::getIsDelete,UserConstant.USER_STATUS_NORMAL)
+                    .eq(User::getUserStatus,UserConstant.USER_STATUS_NORMAL)
+                    .eq(User::getUserRole,UserConstant.DEFAULT_ROLE);
+             list = this.list(queryWrapper);
+        }
+        return BeanCopyUtils.copyBeanList(list,UserTagVO.class);
+    }
 
 
     @Override

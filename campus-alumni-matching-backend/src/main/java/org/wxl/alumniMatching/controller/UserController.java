@@ -183,6 +183,24 @@ public class UserController {
 
 
     /**
+     * 查询符合条件的用户信息
+     *
+     * @param condition 查询用户名或账号
+     * @param request 获取当前用户信息
+     * @return 分页信息
+     */
+    @ApiOperation(value = "用户条件查询")
+    @GetMapping("/search/user")
+    public BaseResponse<List<UserTagVO>> searchUserList2(String condition, HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        if (loginUser == null){
+            throw new BusinessException(ErrorCode.NOT_LOGIN,"请登录");
+        }
+        return ResultUtils.success(userService.selectConditionUser(condition,loginUser));
+    }
+
+
+    /**
      * 查询符合标签的用户
      * @param pageNum 页面
      * @param pageSize 每页数据量

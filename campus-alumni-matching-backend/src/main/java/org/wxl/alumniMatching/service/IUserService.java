@@ -205,4 +205,13 @@ public interface IUserService extends IService<User> {
      * 将所有标签对应的用户信息缓存到redis中
      */
     void userCacheByTag();
+
+    /**
+     * 查询符合条件的用户信息
+     *
+     * @param condition 查询用户名或账号
+     * @param loginUser 当前用户信息
+     * @return 分页信息
+     */
+    List<UserTagVO> selectConditionUser(String condition, User loginUser);
 }

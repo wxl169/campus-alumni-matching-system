@@ -31,5 +31,23 @@
 
     </update>
 
+    <update id="updateTeamMessageStatus">
+        update tb_message_team_user
+                set status = 1
+        where
+            id in (
+                select team_user_id from
+                    (
+                        select mtu.id as team_user_id
+                        from tb_message_team as mt
+                                 join tb_message_team_user as mtu
+                                      on mt.id = mtu.message_team_id
+                                          where mt.team_id = #{teamId}
+                                          AND mtu.receive_user_id = #{userId}
+                                          AND mtu.`status` = 0
+                    ) as a
+            )
+    </update>
+
 
 </mapper>

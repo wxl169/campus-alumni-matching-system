@@ -71,6 +71,8 @@ private UserMapper userMapper;
 
     @Override
     public List<MessageTeamVO> getRecentMessage(Long teamId, User loginUser) {
+        //将历史消息状态改为已读
+        messageTeamUserService.updateTeamMessageUser(teamId, loginUser.getId());
         //根据队伍id 查出最近两天的消息记录
         List<MessageTeam> messageTeams = messageTeamMapper.selectTeamMessage(teamId,loginUser.getId());
         List<MessageTeamVO> messageTeamVOS = BeanCopyUtils.copyBeanList(messageTeams, MessageTeamVO.class);
